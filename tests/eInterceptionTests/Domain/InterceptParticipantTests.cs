@@ -3,9 +3,6 @@
 //-----------------------------------------------------------------------------
 
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace eInterceptionTests.Domain;
 
@@ -18,14 +15,16 @@ public class InterceptParticipantTests
         string name = "John Doe";
         string frequencyCode = "123.4500";
         string divisionName = "Alpha Division";
+        string role = "Commander";
 
         // Act
-        var participant = InterceptParticipant.Create(name, frequencyCode, divisionName);
+        var participant = InterceptParticipant.Create(name, frequencyCode, divisionName, role);
 
         // Assert
         Assert.NotEqual(Guid.Empty, participant.Id);
         Assert.Equal(name, participant.Name);
         Assert.Equal(frequencyCode, participant.FrequencyCode);
+        Assert.Equal(role, participant.Role);
         Assert.Equal(divisionName, participant.DivisionName);
         Assert.True(participant.CreatedAt <= DateTime.UtcNow);
         Assert.True(participant.UpdatedAt <= DateTime.UtcNow);
@@ -35,24 +34,26 @@ public class InterceptParticipantTests
     public void Update_ShouldModifyProperties()
     {
         // Arrange
-        var participant = InterceptParticipant.Create("John Doe", "123.4500", "Alpha Division");
+        var participant = InterceptParticipant.Create("John Doe", "123.4500", "Alpha Division", "Commander");
         string newName = "Jane Smith";
         string newFrequencyCode = "987.6500";
         string newDivisionName = "Beta Division";
+        string newRole = "Observer";
 
         // Act
-        participant.Update(newName, newFrequencyCode, newDivisionName);
+        participant.Update(newName, newFrequencyCode, newDivisionName, newRole);
 
         // Assert
         Assert.Equal(newName, participant.Name);
         Assert.Equal(newFrequencyCode, participant.FrequencyCode);
         Assert.Equal(newDivisionName, participant.DivisionName);
+        Assert.Equal(newRole, participant.Role);
         Assert.True(participant.UpdatedAt > participant.CreatedAt);
     }
 
     [Fact]
     public void Create_ShouldThrowException_WhenNameIsNullOrWhitespace()
-    {   
+    {
         // Arrange
         string frequencyCode = "123.4500";
 
@@ -81,9 +82,9 @@ public class InterceptParticipantTests
         var participant = InterceptParticipant.Create("John Doe", "123.4500", "Alpha Division");
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => participant.Update(null!, "987.6500", "Beta Division"));
-        Assert.Throws<ArgumentException>(() => participant.Update(string.Empty, "987.6500", "Beta Division"));
-        Assert.Throws<ArgumentException>(() => participant.Update("   ", "987.6500", "Beta Division"));
+        Assert.Throws<ArgumentException>(() => participant.Update(null!, "987.6500", "Beta Division", "Observer"));
+        Assert.Throws<ArgumentException>(() => participant.Update(string.Empty, "987.6500", "Beta Division", "Observer"));
+        Assert.Throws<ArgumentException>(() => participant.Update("   ", "987.6500", "Beta Division", "Observer"));
     }
 
     [Fact]
@@ -93,8 +94,8 @@ public class InterceptParticipantTests
         var participant = InterceptParticipant.Create("John Doe", "123.4500", "Alpha Division");
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", null!, "Beta Division"));
-        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", string.Empty, "Beta Division"));
-        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", "   ", "Beta Division"));
+        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", null!, "Beta Division", "Observer"));
+        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", string.Empty, "Beta Division", "Observer"));
+        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", "   ", "Beta Division", "Observer"));
     }
 }
