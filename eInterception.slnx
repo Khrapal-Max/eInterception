@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/common/">
+    <Project Path="common/Common/Common.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Application/Application.csproj" />
+    <Project Path="src/Domain/Domain.csproj" />
+    <Project Path="src/Infrastructure/Infrastructure.csproj" />
+    <Project Path="src/WebUI/WebUI.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/eInterceptionTests/eInterceptionTests.csproj" Id="9723f1b6-8d2a-4006-87c4-e8d454eab7f5" />
+  </Folder>
+</Solution>
