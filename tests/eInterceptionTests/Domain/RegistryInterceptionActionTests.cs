@@ -6,17 +6,17 @@ using Domain.Entities;
 
 namespace eInterceptionTests.Domain;
 
-public class InterceptionActionTests
+public class RegistryInterceptionActionTests
 {
     [Fact]
-    public void Create_ShouldReturnValidInterceptionAction()
+    public void Create_ShouldReturnValidRegistryInterceptionAction()
     {
         // Arrange
         string name = "Спостереження";
         string description = "Опис дії спостереження";
 
         // Act
-        var action = InterceptionAction.Create(name, description);
+        var action = RegistryInterceptionAction.Create(name, description);
 
         // Assert
         Assert.NotNull(action);
@@ -28,7 +28,7 @@ public class InterceptionActionTests
     public void Update_ShouldModifyProperties()
     {
         // Arrange
-        var action = InterceptionAction.Create("Спостереження", "Опис дії спостереження");
+        var action = RegistryInterceptionAction.Create("Спостереження", "Опис дії спостереження");
         string newName = "Загроза";
         string newDescription = "Опис дії загрози";
 
@@ -47,14 +47,14 @@ public class InterceptionActionTests
         string invalidName = "   ";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => InterceptionAction.Create(invalidName));
+        Assert.Throws<ArgumentException>(() => RegistryInterceptionAction.Create(invalidName));
     }
 
     [Fact]
     public void Update_ShouldThrowException_WhenNameIsNullOrWhitespace()
     {
         // Arrange
-        var action = InterceptionAction.Create("Спостереження", "Опис дії спостереження");
+        var action = RegistryInterceptionAction.Create("Спостереження", "Опис дії спостереження");
         string invalidName = "   ";
 
         // Act & Assert

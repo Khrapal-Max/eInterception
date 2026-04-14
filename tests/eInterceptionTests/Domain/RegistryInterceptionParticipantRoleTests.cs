@@ -6,7 +6,7 @@ using Domain.Entities;
 
 namespace eInterceptionTests.Domain;
 
-public class InterceptionParticipantRoleTests
+public class RegistryInterceptionParticipantRoleTests
 {
     [Fact]
     public void Create_ShouldSucceed_WithValidData()
@@ -16,7 +16,7 @@ public class InterceptionParticipantRoleTests
         string description = "Особа, яка спостерігає за радіоперехопленням.";
 
         // Act
-        var role = InterceptionParticipantRole.Create(name, description);
+        var role = RegistryInterceptionParticipantRole.Create(name, description);
 
         // Assert
         Assert.NotNull(role);
@@ -32,7 +32,7 @@ public class InterceptionParticipantRoleTests
         string description = "  Особа, яка спостерігає за радіоперехопленням.  ";
 
         // Act
-        var role = InterceptionParticipantRole.Create(name, description);
+        var role = RegistryInterceptionParticipantRole.Create(name, description);
 
         // Assert
         Assert.NotNull(role);
@@ -49,14 +49,14 @@ public class InterceptionParticipantRoleTests
         string description = "Опис ролі.";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => InterceptionParticipantRole.Create(name, description));
+        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipantRole.Create(name, description));
     }
 
     [Fact]
     public void Update_ShouldSucceed_WithValidData()
     {
         // Arrange
-        var role = InterceptionParticipantRole.Create("Спостерігач", "Опис ролі.");
+        var role = RegistryInterceptionParticipantRole.Create("Спостерігач", "Опис ролі.");
         string newName = "Аналітик";
         string newDescription = "Особа, яка аналізує радіоперехоплення.";
 

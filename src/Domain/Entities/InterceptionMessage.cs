@@ -4,6 +4,10 @@
 
 namespace Domain.Entities;
 
+/// <summary>
+/// Сутность, яка описує перехоплення.
+/// Є основним елементом журнала перехоплень.
+/// </summary>
 public sealed class InterceptionMessage
 {
     public Guid Id { get; private set; }
@@ -28,7 +32,13 @@ public sealed class InterceptionMessage
     /// Дії беруться з регістру активних дій.
     /// </summary>
     public Guid? InterceptionActionId { get; private set; }
-    public InterceptionAction? InterceptionAction { get; private set; }
+    public RegistryInterceptionAction? InterceptionAction { get; private set; }
+
+    /// <summary>
+    /// Кількість невідомих учасників у межах цього спостереження.
+    /// НВ не створюються як окремі записи учасників.
+    /// </summary>
+    public int UnknownParticipantCount { get; private set; }
 
     /// <summary>
     /// Запис радіоперехоплення, який містить текстову інформацію про перехоплення.
@@ -54,15 +64,23 @@ public sealed class InterceptionMessage
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
 
+    /// <summary>
+    /// Зв'язки з відомими учасниками перехоплення.
+    /// </summary>
+    public IReadOnlyCollection<RegistryInterceptionParticipant> Participants => _participants;
+
+    private readonly List<RegistryInterceptionParticipant> _participants = [];
+
     // -------------------------------------------------------------------------
     // Factory
     // -------------------------------------------------------------------------
     public static InterceptionMessage Create(DateTime observedDate,
         string frequencyCode,
         string? divisionName,
-        InterceptionAction interceptionAction,
+        RegistryInterceptionAction interceptionAction,
         string messageText,
-        bool isCanBePutOnMap)
+        bool isCanBePutOnMap,
+        int unknownParticipantCount = 0)
     {
         ArgumentNullException.ThrowIfNull(interceptionAction);
 
@@ -81,9 +99,10 @@ public sealed class InterceptionMessage
             ObservedDate = observedDate.ToUniversalTime(),
             FrequencyCode = frequencyCode,
             DivisionName = divisionName,
-            InterceptionActionId = interceptionAction.Id,
+            InterceptionAction = interceptionAction,
             MessageText = messageText,
             IsCanBePutOnMap = isCanBePutOnMap,
+            UnknownParticipantCount = unknownParticipantCount,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -94,9 +113,10 @@ public sealed class InterceptionMessage
     // -------------------------------------------------------------------------
     public void Update(string frequencyCode,
         string? divisionName,
-        InterceptionAction interceptionAction,
+        RegistryInterceptionAction interceptionAction,
         string messageText,
-        bool isCanBePutOnMap)
+        bool isCanBePutOnMap,
+        int unknownParticipantCount)
     {
         ArgumentNullException.ThrowIfNull(interceptionAction);
 
@@ -108,9 +128,53 @@ public sealed class InterceptionMessage
 
         FrequencyCode = frequencyCode;
         DivisionName = divisionName;
-        InterceptionActionId = interceptionAction.Id;
+        InterceptionAction = interceptionAction;
         MessageText = messageText;
         IsCanBePutOnMap = isCanBePutOnMap;
+        UnknownParticipantCount = unknownParticipantCount;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Додає відомого учасника до перехоплення.
+    /// Один і той самий учасник не може бути прив'язаний до одного перехоплення двічі.
+    /// </summary>
+    public void AddParticipant(RegistryInterceptionParticipant participant)
+    {
+        ArgumentNullException.ThrowIfNull(participant);
+
+        if (_participants.Any(x => x.Id == participant.Id))
+            throw new InvalidOperationException("Учасник вже доданий до перехоплення.");
+
+        _participants.Add(participant);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Видаляє учасника з перехоплення.
+    /// </summary>
+    public void RemoveParticipant(Guid registryInterceptionParticipantId)
+    {
+        if(registryInterceptionParticipantId == Guid.Empty)
+            throw new ArgumentException("Ідентифікатор учасника не може бути порожнім.", nameof(registryInterceptionParticipantId));
+
+        var participant = _participants
+            .FirstOrDefault(x => x.Id == registryInterceptionParticipantId) 
+            ?? throw new InvalidOperationException("Учасник не знайдений у перехопленні.");
+
+        _participants.Remove(participant);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Встановлює кількість невідомих учасників.
+    /// </summary>
+    public void SetUnknownParticipantCount(int unknownParticipantCount)
+    {
+        if (unknownParticipantCount < 0)
+            throw new ArgumentException("Кількість невідомих учасників не може бути від'ємною.", nameof(unknownParticipantCount));
+
+        UnknownParticipantCount = unknownParticipantCount;
         UpdatedAt = DateTime.UtcNow;
     }
 }

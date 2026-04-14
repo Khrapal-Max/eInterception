@@ -19,7 +19,7 @@ namespace Domain.Entities;
 ///     
 /// Є унікальним за комбінацією позивного, частоти та підрозділу.
 /// </summary>
-public sealed class InterceptionParticipant
+public sealed class RegistryInterceptionParticipant
 {
     public Guid Id { get; private set; }
 
@@ -61,7 +61,7 @@ public sealed class InterceptionParticipant
     // -------------------------------------------------------------------------
     // Factory
     // -------------------------------------------------------------------------
-    public static InterceptionParticipant Create(string name, string frequencyCode, string? divisionName = null, string? role = null)
+    public static RegistryInterceptionParticipant Create(string name, string frequencyCode, string? divisionName = null, string? role = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Ім'я учасника обов'язкове.", nameof(name));
@@ -69,7 +69,7 @@ public sealed class InterceptionParticipant
         if (string.IsNullOrWhiteSpace(frequencyCode))
             throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
 
-        return new InterceptionParticipant
+        return new RegistryInterceptionParticipant
         {
             Id = Guid.NewGuid(),
             Name = name,
