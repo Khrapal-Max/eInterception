@@ -19,7 +19,7 @@ namespace Domain.Entities;
 ///     
 /// Є унікальним за комбінацією позивного, частоти та підрозділу.
 /// </summary>
-public sealed class InterceptParticipant
+public sealed class InterceptionParticipant
 {
     public Guid Id { get; private set; }
 
@@ -58,15 +58,18 @@ public sealed class InterceptParticipant
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
 
-    public static InterceptParticipant Create(string name, string frequencyCode, string? divisionName = null, string? role = null)
+    // -------------------------------------------------------------------------
+    // Factory
+    // -------------------------------------------------------------------------
+    public static InterceptionParticipant Create(string name, string frequencyCode, string? divisionName = null, string? role = null)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name cannot be null or whitespace.", nameof(name));
+            throw new ArgumentException("Ім'я учасника обов'язкове.", nameof(name));
 
         if (string.IsNullOrWhiteSpace(frequencyCode))
-            throw new ArgumentException("FrequencyCode cannot be null or whitespace.", nameof(frequencyCode));
+            throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
 
-        return new InterceptParticipant
+        return new InterceptionParticipant
         {
             Id = Guid.NewGuid(),
             Name = name,
@@ -78,13 +81,16 @@ public sealed class InterceptParticipant
         };
     }
 
+    // -------------------------------------------------------------------------
+    // Behaviour
+    // -------------------------------------------------------------------------
     public void Update(string name, string frequencyCode, string? divisionName = null, string? role = null)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name cannot be null or whitespace.", nameof(name));
+            throw new ArgumentException("Ім'я учасника обов'язкове.", nameof(name));
 
         if (string.IsNullOrWhiteSpace(frequencyCode))
-            throw new ArgumentException("FrequencyCode cannot be null or whitespace.", nameof(frequencyCode));
+            throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
 
         Name = name;
         FrequencyCode = frequencyCode;
