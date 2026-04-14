@@ -39,10 +39,10 @@ public sealed class RegistryInterceptionParticipant
     public string? DivisionName { get; private set; }
 
     /// <summary>
-    /// Назва ролі учасника перехоплення, не унікальна,
+    /// Ид назви ролі учасника перехоплення, не унікальна,
     /// може повторюватися. Наприклад: "Командир", "Радист", "Спостерігач" тощо.
     /// </summary>
-    public string? Role { get; private set; }
+    public Guid? RegistryInterceptionParticipantRoleId { get; private set; }
 
     /// <summary>
     /// Дата та час створення запису про учасника перехоплення.
@@ -61,7 +61,7 @@ public sealed class RegistryInterceptionParticipant
     // -------------------------------------------------------------------------
     // Factory
     // -------------------------------------------------------------------------
-    public static RegistryInterceptionParticipant Create(string name, string frequencyCode, string? divisionName = null, string? role = null)
+    public static RegistryInterceptionParticipant Create(string name, string frequencyCode, string? divisionName = null, Guid? roleId = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Ім'я учасника обов'язкове.", nameof(name));
@@ -75,7 +75,7 @@ public sealed class RegistryInterceptionParticipant
             Name = name,
             FrequencyCode = frequencyCode,
             DivisionName = divisionName,
-            Role = role,
+            RegistryInterceptionParticipantRoleId = roleId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -84,7 +84,7 @@ public sealed class RegistryInterceptionParticipant
     // -------------------------------------------------------------------------
     // Behaviour
     // -------------------------------------------------------------------------
-    public void Update(string name, string frequencyCode, string? divisionName = null, string? role = null)
+    public void Update(string name, string frequencyCode, string? divisionName = null, Guid? roleId = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Ім'я учасника обов'язкове.", nameof(name));
@@ -95,7 +95,7 @@ public sealed class RegistryInterceptionParticipant
         Name = name;
         FrequencyCode = frequencyCode;
         DivisionName = divisionName;
-        Role = role;
+        RegistryInterceptionParticipantRoleId = roleId;
         UpdatedAt = DateTime.UtcNow;
     }
 }

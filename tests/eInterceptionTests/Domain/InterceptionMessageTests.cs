@@ -15,7 +15,7 @@ public class InterceptionMessageTests
         var observedDate = DateTime.UtcNow;
         var frequencyCode = "123.45 MHz";
         var divisionName = "Division A";
-        var interceptionAction = "Moving";
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
         var unknownParticipantCount = 3;
         var messageText = "Test interception message.";
         var isCanBePutOnMap = true;
@@ -25,7 +25,7 @@ public class InterceptionMessageTests
             observedDate,
             frequencyCode,
             divisionName,
-            RegistryInterceptionAction.Create(interceptionAction),
+            interceptionAction.Id,
             messageText,
             isCanBePutOnMap,
             unknownParticipantCount
@@ -35,7 +35,7 @@ public class InterceptionMessageTests
         Assert.Equal(observedDate, interceptionMessage.ObservedDate);
         Assert.Equal(frequencyCode, interceptionMessage.FrequencyCode);
         Assert.Equal(divisionName, interceptionMessage.DivisionName);
-        Assert.Equal(interceptionAction, interceptionMessage.InterceptionAction?.Name);
+        Assert.Equal(interceptionAction.Id, interceptionMessage.InterceptionActionId);
         Assert.Equal(unknownParticipantCount, interceptionMessage.UnknownParticipantCount);
         Assert.Equal(messageText, interceptionMessage.MessageText);
         Assert.Equal(isCanBePutOnMap, interceptionMessage.IsCanBePutOnMap);
@@ -49,7 +49,7 @@ public class InterceptionMessageTests
         var observedDate = DateTime.UtcNow;
         var frequencyCode = "123.45 MHz";
         var divisionName = "Division A";
-        var interceptionAction = "Moving";
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
         var messageText = "Test interception message.";
         var isCanBePutOnMap = true;
 
@@ -58,7 +58,7 @@ public class InterceptionMessageTests
             default,
             frequencyCode,
             divisionName,
-            RegistryInterceptionAction.Create(interceptionAction),
+            interceptionAction.Id,
             messageText,
             isCanBePutOnMap
         ));
@@ -66,7 +66,7 @@ public class InterceptionMessageTests
             observedDate,
             string.Empty,
             divisionName,
-            RegistryInterceptionAction.Create(interceptionAction),
+            interceptionAction.Id,
             messageText,
             isCanBePutOnMap
         ));
@@ -74,7 +74,7 @@ public class InterceptionMessageTests
             observedDate,
             frequencyCode,
             divisionName,
-            RegistryInterceptionAction.Create(interceptionAction),
+            interceptionAction.Id,
             string.Empty,
             isCanBePutOnMap
         ));
@@ -84,11 +84,13 @@ public class InterceptionMessageTests
     public void UpdateInterceptionMessage_ShouldUpdateProperties()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+        
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );
@@ -103,7 +105,7 @@ public class InterceptionMessageTests
         interceptionMessage.Update(
             newFrequencyCode,
             newDivisionName,
-            newInterceptionAction,
+            newInterceptionAction.Id,
             newMessageText,
             newIsCanBePutOnMap,
             unknownParticipantCount
@@ -112,7 +114,7 @@ public class InterceptionMessageTests
         // Assert
         Assert.Equal(newFrequencyCode, interceptionMessage.FrequencyCode);
         Assert.Equal(newDivisionName, interceptionMessage.DivisionName);
-        Assert.Equal(newInterceptionAction.Name, interceptionMessage.InterceptionAction?.Name);
+        Assert.Equal(newInterceptionAction.Id, interceptionMessage.InterceptionActionId);
         Assert.Equal(newMessageText, interceptionMessage.MessageText);
         Assert.Equal(newIsCanBePutOnMap, interceptionMessage.IsCanBePutOnMap);
         Assert.Equal(unknownParticipantCount, interceptionMessage.UnknownParticipantCount);
@@ -123,11 +125,14 @@ public class InterceptionMessageTests
     public void UpdateInterceptionMessage_ShouldThrowException_WhenRequiredFieldsAreMissing()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+        var newInterceptionAction = RegistryInterceptionAction.Create("Stationary");
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );
@@ -136,7 +141,7 @@ public class InterceptionMessageTests
         Assert.Throws<ArgumentException>(() => interceptionMessage.Update(
             string.Empty,
             "Division B",
-            RegistryInterceptionAction.Create("Stationary"),
+            newInterceptionAction.Id,
             "Updated interception message.",
             false,
             2
@@ -144,7 +149,7 @@ public class InterceptionMessageTests
         Assert.Throws<ArgumentException>(() => interceptionMessage.Update(
             "543.21 MHz",
             "Division B",
-            RegistryInterceptionAction.Create("Stationary"),
+            newInterceptionAction.Id,
             string.Empty,
             false,
             2
@@ -155,11 +160,13 @@ public class InterceptionMessageTests
     public void AddParticipant_ShouldAddParticipantToInterceptionMessage()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );
@@ -179,11 +186,13 @@ public class InterceptionMessageTests
     public void AddParticipant_ShouldThrowException_WhenParticipantIsNull()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );
@@ -196,11 +205,13 @@ public class InterceptionMessageTests
     public void AddParticipant_ShouldThrowException_WhenParticipantAlreadyExists()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );
@@ -219,11 +230,13 @@ public class InterceptionMessageTests
     public void RemoveParticipant_ShouldRemoveParticipantFromInterceptionMessage()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );
@@ -244,11 +257,13 @@ public class InterceptionMessageTests
     public void RemoveParticipant_ShouldThrowException_WhenParticipantDoesNotExist()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );
@@ -262,11 +277,13 @@ public class InterceptionMessageTests
     public void RemoveParticipant_ShouldThrowException_WhenParticipantIdIsEmpty()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );
@@ -279,22 +296,25 @@ public class InterceptionMessageTests
     public void Update_ShouldUpdateUpdatedAtProperty()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+        var newInterceptionAction = RegistryInterceptionAction.Create("Stationary");
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );
         var initialUpdatedAt = interceptionMessage.UpdatedAt;
 
         // Act
-        System.Threading.Thread.Sleep(1000); // Ensure time difference
+        Thread.Sleep(1000); // Ensure time difference
         interceptionMessage.Update(
             "543.21 MHz",
             "Division B",
-            RegistryInterceptionAction.Create("Stationary"),
+            newInterceptionAction.Id,
             "Updated interception message.",
             false,
             2
@@ -308,11 +328,13 @@ public class InterceptionMessageTests
     public void SetUnknownParticipantCount_ShouldUpdateUnknownParticipantCount()
     {
         // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
             "Division A",
-            RegistryInterceptionAction.Create("Moving"),
+            interceptionAction.Id,
             "Test interception message.",
             true
         );

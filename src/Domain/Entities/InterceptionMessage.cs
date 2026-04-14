@@ -31,8 +31,7 @@ public sealed class InterceptionMessage
     /// ДІя - характеризує та коротко описує зміст радіоперехоплення.
     /// Дії беруться з регістру активних дій.
     /// </summary>
-    public Guid? InterceptionActionId { get; private set; }
-    public RegistryInterceptionAction? InterceptionAction { get; private set; }
+    public Guid InterceptionActionId { get; private set; }
 
     /// <summary>
     /// Кількість невідомих учасників у межах цього спостереження.
@@ -77,18 +76,19 @@ public sealed class InterceptionMessage
     public static InterceptionMessage Create(DateTime observedDate,
         string frequencyCode,
         string? divisionName,
-        RegistryInterceptionAction interceptionAction,
+        Guid interceptionActionId,
         string messageText,
         bool isCanBePutOnMap,
         int unknownParticipantCount = 0)
     {
-        ArgumentNullException.ThrowIfNull(interceptionAction);
-
         if (observedDate == default)
             throw new ArgumentException("Дата спостереження обов'язкова.", nameof(observedDate));
 
         if (string.IsNullOrWhiteSpace(frequencyCode))
             throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
+
+        if (interceptionActionId == Guid.Empty)
+            throw new ArgumentException("Ідентифікатор дії перехоплення обов'язковий.", nameof(interceptionActionId));
 
         if (string.IsNullOrWhiteSpace(messageText))
             throw new ArgumentException("Текст повідомлення обов'язковий.", nameof(messageText));
@@ -99,7 +99,7 @@ public sealed class InterceptionMessage
             ObservedDate = observedDate.ToUniversalTime(),
             FrequencyCode = frequencyCode,
             DivisionName = divisionName,
-            InterceptionAction = interceptionAction,
+            InterceptionActionId = interceptionActionId,
             MessageText = messageText,
             IsCanBePutOnMap = isCanBePutOnMap,
             UnknownParticipantCount = unknownParticipantCount,
@@ -113,22 +113,23 @@ public sealed class InterceptionMessage
     // -------------------------------------------------------------------------
     public void Update(string frequencyCode,
         string? divisionName,
-        RegistryInterceptionAction interceptionAction,
+        Guid interceptionActionId,
         string messageText,
         bool isCanBePutOnMap,
         int unknownParticipantCount)
-    {
-        ArgumentNullException.ThrowIfNull(interceptionAction);
-
+    {       
         if (string.IsNullOrWhiteSpace(frequencyCode))
             throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
+
+        if (interceptionActionId == Guid.Empty)
+            throw new ArgumentException("Ідентифікатор дії перехоплення обов'язковий.", nameof(interceptionActionId));
 
         if (string.IsNullOrWhiteSpace(messageText))
             throw new ArgumentException("Текст повідомлення обов'язковий.", nameof(messageText));
 
         FrequencyCode = frequencyCode;
         DivisionName = divisionName;
-        InterceptionAction = interceptionAction;
+        InterceptionActionId = interceptionActionId;
         MessageText = messageText;
         IsCanBePutOnMap = isCanBePutOnMap;
         UnknownParticipantCount = unknownParticipantCount;

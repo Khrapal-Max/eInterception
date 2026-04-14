@@ -23,7 +23,7 @@ public sealed class RegistryInterceptionParticipantRole
     /// Опис ролі, який надає додаткову інформацію про роль учасника перехоплення. 
     /// Не є обов'язковим і може бути порожнім.
     /// </summary>
-    public string Description { get; private set; } = string.Empty;
+    public string? Description { get; private set; }
 
     // -------------------------------------------------------------------------
     // Factory

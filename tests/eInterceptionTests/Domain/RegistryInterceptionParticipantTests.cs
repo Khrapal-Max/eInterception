@@ -12,19 +12,19 @@ public class RegistryInterceptionParticipantTests
     public void Create_ShouldInitializeProperties()
     {
         // Arrange
-        string name = "John Doe";
-        string frequencyCode = "123.4500";
-        string divisionName = "Alpha Division";
-        string role = "Commander";
+        var name = "John Doe";
+        var frequencyCode = "123.4500";
+        var divisionName = "Alpha Division";
+        var roleId = Guid.NewGuid();
 
         // Act
-        var participant = RegistryInterceptionParticipant.Create(name, frequencyCode, divisionName, role);
+        var participant = RegistryInterceptionParticipant.Create(name, frequencyCode, divisionName, roleId);
 
         // Assert
         Assert.NotEqual(Guid.Empty, participant.Id);
         Assert.Equal(name, participant.Name);
         Assert.Equal(frequencyCode, participant.FrequencyCode);
-        Assert.Equal(role, participant.Role);
+        Assert.Equal(roleId, participant.RegistryInterceptionParticipantRoleId);
         Assert.Equal(divisionName, participant.DivisionName);
         Assert.True(participant.CreatedAt <= DateTime.UtcNow);
         Assert.True(participant.UpdatedAt <= DateTime.UtcNow);
@@ -34,20 +34,22 @@ public class RegistryInterceptionParticipantTests
     public void Update_ShouldModifyProperties()
     {
         // Arrange
-        var participant = RegistryInterceptionParticipant.Create("John Doe", "123.4500", "Alpha Division", "Commander");
-        string newName = "Jane Smith";
-        string newFrequencyCode = "987.6500";
-        string newDivisionName = "Beta Division";
-        string newRole = "Observer";
+        var roleId = Guid.NewGuid();
+
+        var participant = RegistryInterceptionParticipant.Create("John Doe", "123.4500", "Alpha Division", roleId);
+        var newName = "Jane Smith";
+        var newFrequencyCode = "987.6500";
+        var newDivisionName = "Beta Division";
+        var newRoleId = Guid.NewGuid();
 
         // Act
-        participant.Update(newName, newFrequencyCode, newDivisionName, newRole);
+        participant.Update(newName, newFrequencyCode, newDivisionName, newRoleId);
 
         // Assert
         Assert.Equal(newName, participant.Name);
         Assert.Equal(newFrequencyCode, participant.FrequencyCode);
         Assert.Equal(newDivisionName, participant.DivisionName);
-        Assert.Equal(newRole, participant.Role);
+        Assert.Equal(newRoleId, participant.RegistryInterceptionParticipantRoleId);
         Assert.True(participant.UpdatedAt > participant.CreatedAt);
     }
 
@@ -79,23 +81,27 @@ public class RegistryInterceptionParticipantTests
     public void Update_ShouldThrowException_WhenNameIsNullOrWhitespace()
     {
         // Arrange
+        var roleId = Guid.NewGuid();
+
         var participant = RegistryInterceptionParticipant.Create("John Doe", "123.4500", "Alpha Division");
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => participant.Update(null!, "987.6500", "Beta Division", "Observer"));
-        Assert.Throws<ArgumentException>(() => participant.Update(string.Empty, "987.6500", "Beta Division", "Observer"));
-        Assert.Throws<ArgumentException>(() => participant.Update("   ", "987.6500", "Beta Division", "Observer"));
+        Assert.Throws<ArgumentException>(() => participant.Update(null!, "987.6500", "Beta Division", roleId));
+        Assert.Throws<ArgumentException>(() => participant.Update(string.Empty, "987.6500", "Beta Division", roleId));
+        Assert.Throws<ArgumentException>(() => participant.Update("   ", "987.6500", "Beta Division", roleId));
     }
 
     [Fact]
     public void Update_ShouldThrowException_WhenFrequencyCodeIsNullOrWhitespace()
     {
         // Arrange
+        var roleId = Guid.NewGuid();
+
         var participant = RegistryInterceptionParticipant.Create("John Doe", "123.4500", "Alpha Division");
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", null!, "Beta Division", "Observer"));
-        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", string.Empty, "Beta Division", "Observer"));
-        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", "   ", "Beta Division", "Observer"));
+        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", null!, "Beta Division", roleId));
+        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", string.Empty, "Beta Division", roleId));
+        Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", "   ", "Beta Division", roleId));
     }
 }
