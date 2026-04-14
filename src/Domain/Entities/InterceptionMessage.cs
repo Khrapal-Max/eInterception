@@ -25,7 +25,7 @@ public sealed class InterceptionMessage
     /// <summary>
     /// Назва підрозділу, не унікальна, може повторюватися.
     /// </summary>
-    public string? DivisionName { get; set; }
+    public string? DivisionName { get; private set; }
 
     /// <summary>
     /// ДІя - характеризує та коротко описує зміст радіоперехоплення.
@@ -47,7 +47,7 @@ public sealed class InterceptionMessage
     /// <summary>
     /// Під час створення об'єкта визначається, чи може це перехоплення бути розміщене на карті.
     /// </summary>
-    public bool IsCanBePutOnMap { get; private set; }
+    public bool CanBePutOnMap { get; private set; }
 
     /// <summary>
     /// Дата та час створення запису перехоплення.
@@ -78,7 +78,7 @@ public sealed class InterceptionMessage
         string? divisionName,
         Guid interceptionActionId,
         string messageText,
-        bool isCanBePutOnMap,
+        bool canBePutOnMap,
         int unknownParticipantCount = 0)
     {
         if (observedDate == default)
@@ -93,6 +93,9 @@ public sealed class InterceptionMessage
         if (string.IsNullOrWhiteSpace(messageText))
             throw new ArgumentException("Текст повідомлення обов'язковий.", nameof(messageText));
 
+        if (unknownParticipantCount < 0)
+            throw new ArgumentException("Кількість невідомих учасників не може бути від'ємною.", nameof(unknownParticipantCount));
+
         return new InterceptionMessage
         {
             Id = Guid.NewGuid(),
@@ -101,7 +104,7 @@ public sealed class InterceptionMessage
             DivisionName = divisionName,
             InterceptionActionId = interceptionActionId,
             MessageText = messageText,
-            IsCanBePutOnMap = isCanBePutOnMap,
+            CanBePutOnMap = canBePutOnMap,
             UnknownParticipantCount = unknownParticipantCount,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -115,7 +118,7 @@ public sealed class InterceptionMessage
         string? divisionName,
         Guid interceptionActionId,
         string messageText,
-        bool isCanBePutOnMap,
+        bool canBePutOnMap,
         int unknownParticipantCount)
     {       
         if (string.IsNullOrWhiteSpace(frequencyCode))
@@ -127,11 +130,14 @@ public sealed class InterceptionMessage
         if (string.IsNullOrWhiteSpace(messageText))
             throw new ArgumentException("Текст повідомлення обов'язковий.", nameof(messageText));
 
+        if (unknownParticipantCount < 0)
+            throw new ArgumentException("Кількість невідомих учасників не може бути від'ємною.", nameof(unknownParticipantCount));
+
         FrequencyCode = frequencyCode;
         DivisionName = divisionName;
         InterceptionActionId = interceptionActionId;
         MessageText = messageText;
-        IsCanBePutOnMap = isCanBePutOnMap;
+        CanBePutOnMap = canBePutOnMap;
         UnknownParticipantCount = unknownParticipantCount;
         UpdatedAt = DateTime.UtcNow;
     }

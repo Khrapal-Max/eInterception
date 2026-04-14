@@ -72,9 +72,9 @@ public sealed class RegistryInterceptionParticipant
         return new RegistryInterceptionParticipant
         {
             Id = Guid.NewGuid(),
-            Name = name,
-            FrequencyCode = frequencyCode,
-            DivisionName = divisionName,
+            Name = name.Trim(),
+            FrequencyCode = frequencyCode.Trim(),
+            DivisionName = divisionName?.Trim() ?? null,
             RegistryInterceptionParticipantRoleId = roleId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -92,9 +92,9 @@ public sealed class RegistryInterceptionParticipant
         if (string.IsNullOrWhiteSpace(frequencyCode))
             throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
 
-        Name = name;
-        FrequencyCode = frequencyCode;
-        DivisionName = divisionName;
+        Name = name.Trim();
+        FrequencyCode = frequencyCode.Trim();
+        DivisionName = divisionName?.Trim() ?? null;
         RegistryInterceptionParticipantRoleId = roleId;
         UpdatedAt = DateTime.UtcNow;
     }

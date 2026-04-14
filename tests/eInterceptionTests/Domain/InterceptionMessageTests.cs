@@ -18,7 +18,7 @@ public class InterceptionMessageTests
         var interceptionAction = RegistryInterceptionAction.Create("Moving");
         var unknownParticipantCount = 3;
         var messageText = "Test interception message.";
-        var isCanBePutOnMap = true;
+        var сanBePutOnMap = true;
 
         // Act
         var interceptionMessage = InterceptionMessage.Create(
@@ -27,7 +27,7 @@ public class InterceptionMessageTests
             divisionName,
             interceptionAction.Id,
             messageText,
-            isCanBePutOnMap,
+            сanBePutOnMap,
             unknownParticipantCount
         );
 
@@ -38,7 +38,7 @@ public class InterceptionMessageTests
         Assert.Equal(interceptionAction.Id, interceptionMessage.InterceptionActionId);
         Assert.Equal(unknownParticipantCount, interceptionMessage.UnknownParticipantCount);
         Assert.Equal(messageText, interceptionMessage.MessageText);
-        Assert.Equal(isCanBePutOnMap, interceptionMessage.IsCanBePutOnMap);
+        Assert.Equal(сanBePutOnMap, interceptionMessage.CanBePutOnMap);
         Assert.NotEqual(default, interceptionMessage.CreatedAt);
     }
 
@@ -51,7 +51,7 @@ public class InterceptionMessageTests
         var divisionName = "Division A";
         var interceptionAction = RegistryInterceptionAction.Create("Moving");
         var messageText = "Test interception message.";
-        var isCanBePutOnMap = true;
+        var сanBePutOnMap = true;
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => InterceptionMessage.Create(
@@ -60,7 +60,7 @@ public class InterceptionMessageTests
             divisionName,
             interceptionAction.Id,
             messageText,
-            isCanBePutOnMap
+            сanBePutOnMap
         ));
         Assert.Throws<ArgumentException>(() => InterceptionMessage.Create(
             observedDate,
@@ -68,7 +68,7 @@ public class InterceptionMessageTests
             divisionName,
             interceptionAction.Id,
             messageText,
-            isCanBePutOnMap
+            сanBePutOnMap
         ));
         Assert.Throws<ArgumentException>(() => InterceptionMessage.Create(
             observedDate,
@@ -76,7 +76,7 @@ public class InterceptionMessageTests
             divisionName,
             interceptionAction.Id,
             string.Empty,
-            isCanBePutOnMap
+            сanBePutOnMap
         ));
     }
 
@@ -98,7 +98,7 @@ public class InterceptionMessageTests
         var newDivisionName = "Division B";
         var newInterceptionAction = RegistryInterceptionAction.Create("Stationary");
         var newMessageText = "Updated interception message.";
-        var newIsCanBePutOnMap = false;
+        var newCanBePutOnMap = false;
         var unknownParticipantCount = 2;
 
         // Act
@@ -107,7 +107,7 @@ public class InterceptionMessageTests
             newDivisionName,
             newInterceptionAction.Id,
             newMessageText,
-            newIsCanBePutOnMap,
+            newCanBePutOnMap,
             unknownParticipantCount
         );
 
@@ -116,7 +116,7 @@ public class InterceptionMessageTests
         Assert.Equal(newDivisionName, interceptionMessage.DivisionName);
         Assert.Equal(newInterceptionAction.Id, interceptionMessage.InterceptionActionId);
         Assert.Equal(newMessageText, interceptionMessage.MessageText);
-        Assert.Equal(newIsCanBePutOnMap, interceptionMessage.IsCanBePutOnMap);
+        Assert.Equal(newCanBePutOnMap, interceptionMessage.CanBePutOnMap);
         Assert.Equal(unknownParticipantCount, interceptionMessage.UnknownParticipantCount);
         Assert.True(interceptionMessage.UpdatedAt > interceptionMessage.CreatedAt);
     }
@@ -344,5 +344,51 @@ public class InterceptionMessageTests
 
         // Assert
         Assert.Equal(5, interceptionMessage.UnknownParticipantCount);
+    }
+
+    [Fact]
+    public void SetUnknownParticipantCount_ShouldThrowException_WhenCountIsNegative()
+    {
+        // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+        var interceptionMessage = InterceptionMessage.Create(
+            DateTime.UtcNow,
+            "123.45 MHz",
+            "Division A",
+            interceptionAction.Id,
+            "Test interception message.",
+            true
+        );
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => interceptionMessage.SetUnknownParticipantCount(-1));
+    }
+
+    [Fact]
+    public void CanBePutOnMap_UpdateShouldChangeCanBePutOnMapValue()
+    {
+        // Arrange
+        var interceptionAction = RegistryInterceptionAction.Create("Moving");
+        var interceptionMessage = InterceptionMessage.Create(
+            DateTime.UtcNow,
+            "123.45 MHz",
+            "Division A",
+            interceptionAction.Id,
+            "Test interception message.",
+            true
+        );
+
+        // Act
+        interceptionMessage.Update(
+            "543.21 MHz",
+            "Division B",
+            interceptionAction.Id,
+            "Updated interception message.",
+            false,
+            2
+        );
+
+        // Assert
+        Assert.False(interceptionMessage.CanBePutOnMap);
     }
 }

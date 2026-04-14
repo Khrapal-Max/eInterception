@@ -40,7 +40,7 @@ public sealed class RegistryInterceptionAction
         {
             Id = Guid.NewGuid(),
             Name = name.Trim(),
-            Description = description?.Trim() ?? string.Empty
+            Description = description?.Trim() ?? null
         };
     }
 
@@ -53,6 +53,6 @@ public sealed class RegistryInterceptionAction
             throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
 
         Name = name.Trim();
-        Description = description?.Trim() ?? string.Empty;
+        Description = description?.Trim() ?? null;
     }
 }

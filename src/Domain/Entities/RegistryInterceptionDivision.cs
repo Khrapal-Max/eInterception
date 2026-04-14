@@ -22,7 +22,7 @@ public sealed class RegistryInterceptionDivision
     /// <summary>
     /// Назва підрозділу, не унікальна, може повторюватися в регістрі.
     /// </summary>
-    public string? DivisionName { get; set; }     
+    public string? DivisionName { get; private set; }     
 
     // -------------------------------------------------------------------------
     // Factory
@@ -35,8 +35,8 @@ public sealed class RegistryInterceptionDivision
         return new RegistryInterceptionDivision
         {
             Id = Guid.NewGuid(),
-            FrequencyCode = frequencyCode,
-            DivisionName = divisionName
+            FrequencyCode = frequencyCode.Trim(),
+            DivisionName = divisionName?.Trim() ?? null
         };
     }
 
@@ -45,6 +45,6 @@ public sealed class RegistryInterceptionDivision
     // -------------------------------------------------------------------------
     public void Update(string? divisionName = null)
     {
-        DivisionName = divisionName ?? string.Empty;
+        DivisionName = divisionName?.Trim() ?? null;
     }
 }

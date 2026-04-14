@@ -37,7 +37,7 @@ public sealed class RegistryInterceptionParticipantRole
         {
             Id = Guid.NewGuid(),
             Name = name.Trim(),
-            Description = description?.Trim() ?? string.Empty
+            Description = description?.Trim() ?? null
         };
     }
 
@@ -50,6 +50,6 @@ public sealed class RegistryInterceptionParticipantRole
             throw new ArgumentException("Назва ролі обов'язкова.", nameof(name));
 
         Name = name.Trim();
-        Description = description?.Trim() ?? string.Empty;
+        Description = description?.Trim() ?? null;
     }
 }
