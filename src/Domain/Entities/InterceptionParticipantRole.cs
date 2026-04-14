@@ -5,36 +5,34 @@
 namespace Domain.Entities;
 
 /// <summary>
-/// Сутність, що описує дію перехоплення.
-/// Має власний регістр, який містить всі можливі дії перехоплення, 
-/// що використовуються для категоризації та опису змісту радіоперехоплення.
+/// Довідникова роль учасника перехоплення.
+/// Унікальна по назві і використовується для нормалізації ролей у системі.
+/// Має власний регістр, який містить всі можливі ролі осіб. 
 /// </summary>
-public sealed class InterceptionAction
+public sealed class InterceptionParticipantRole
 {
     public Guid Id { get; private set; }
 
     /// <summary>
-    /// Назва дії. Є унікальною в межах регістру дій перехоплення. 
-    /// Використовується для категоризації та опису змісту радіоперехоплення. 
-    /// Наприклад: "Спостереження", "Загроза", "Підтримка" тощо.
+    /// Назва ролі (посада). Є унікальною в межах регістру ролей осіб. 
     /// </summary>
     public string Name { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Опис дії, який надає додаткову інформацію про зміст дії перехоплення. 
+    /// Опис ролі, який надає додаткову інформацію про роль учасника перехоплення. 
     /// Не є обов'язковим і може бути порожнім.
     /// </summary>
-    public string? Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
 
     // -------------------------------------------------------------------------
     // Factory
     // -------------------------------------------------------------------------
-    public static InterceptionAction Create(string name, string? description = null)
+    public static InterceptionParticipantRole Create(string name, string? description = null)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
+            throw new ArgumentException("Назва ролі обов'язкова.", nameof(name));
 
-        return new InterceptionAction
+        return new InterceptionParticipantRole
         {
             Id = Guid.NewGuid(),
             Name = name.Trim(),
@@ -48,7 +46,7 @@ public sealed class InterceptionAction
     public void Update(string name, string? description = null)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
+            throw new ArgumentException("Назва ролі обов'язкова.", nameof(name));
 
         Name = name.Trim();
         Description = description?.Trim() ?? string.Empty;

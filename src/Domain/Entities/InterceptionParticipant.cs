@@ -76,8 +76,8 @@ public sealed class InterceptionParticipant
             FrequencyCode = frequencyCode,
             DivisionName = divisionName,
             Role = role,
-            CreatedAt = DateTime.Now.ToUniversalTime(),
-            UpdatedAt = DateTime.Now.ToUniversalTime()
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 
@@ -96,6 +96,6 @@ public sealed class InterceptionParticipant
         FrequencyCode = frequencyCode;
         DivisionName = divisionName;
         Role = role;
-        UpdatedAt = DateTime.Now.ToUniversalTime();
+        UpdatedAt = DateTime.UtcNow;
     }
 }
