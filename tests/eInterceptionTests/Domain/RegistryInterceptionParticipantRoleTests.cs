@@ -20,7 +20,7 @@ public class RegistryInterceptionParticipantRoleTests
 
         // Assert
         Assert.NotNull(role);
-        Assert.Equal(name, role.Name);
+        Assert.Equal(name, role.Name.Value);
         Assert.Equal(description, role.Description);
     }
 
@@ -36,7 +36,7 @@ public class RegistryInterceptionParticipantRoleTests
 
         // Assert
         Assert.NotNull(role);
-        Assert.Equal("Спостерігач", role.Name);
+        Assert.Equal("Спостерігач", role.Name.Value);
         Assert.Equal("Особа, яка спостерігає за радіоперехопленням.", role.Description);
     }
 
@@ -64,7 +64,7 @@ public class RegistryInterceptionParticipantRoleTests
         role.Update(newName, newDescription);
 
         // Assert
-        Assert.Equal(newName, role.Name);
+        Assert.Equal(newName, role.Name.Value);
         Assert.Equal(newDescription, role.Description);
     }
 }

@@ -20,7 +20,7 @@ public class RegistryInterceptionActionTests
 
         // Assert
         Assert.NotNull(action);
-        Assert.Equal(name, action.Name);
+        Assert.Equal(name, action.Name.Value);
         Assert.Equal(description, action.Description);
     }
 
@@ -36,7 +36,7 @@ public class RegistryInterceptionActionTests
         action.Update(newName, newDescription);
 
         // Assert
-        Assert.Equal(newName, action.Name);
+        Assert.Equal(newName, action.Name.Value);
         Assert.Equal(newDescription, action.Description);
     }
 

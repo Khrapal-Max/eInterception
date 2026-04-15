@@ -2,6 +2,8 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
+using Domain.ValueObjects;
+
 namespace Domain.Entities;
 
 /// <summary>
@@ -17,7 +19,7 @@ public sealed class RegistryInterceptionParticipantRole
     /// <summary>
     /// Назва ролі (посада). Є унікальною в межах регістру ролей осіб. 
     /// </summary>
-    public string Name { get; private set; } = string.Empty;
+    public ParticipantRoleCodeVo Name { get; private set; }
 
     /// <summary>
     /// Опис ролі, який надає додаткову інформацію про роль учасника перехоплення. 
@@ -30,13 +32,13 @@ public sealed class RegistryInterceptionParticipantRole
     // -------------------------------------------------------------------------
     public static RegistryInterceptionParticipantRole Create(string name, string? description = null)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Назва ролі обов'язкова.", nameof(name));
+        var normalizedName = ParticipantRoleCodeVo.Create(name)
+            ?? throw new ArgumentException("Назва ролі обов'язкова.", nameof(name));
 
         return new RegistryInterceptionParticipantRole
         {
             Id = Guid.NewGuid(),
-            Name = name.Trim(),
+            Name = normalizedName,
             Description = description?.Trim() ?? null
         };
     }
@@ -46,10 +48,10 @@ public sealed class RegistryInterceptionParticipantRole
     // -------------------------------------------------------------------------
     public void Update(string name, string? description = null)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Назва ролі обов'язкова.", nameof(name));
+        var normalizedName = ParticipantRoleCodeVo.Create(name)
+           ?? throw new ArgumentException("Назва ролі обов'язкова.", nameof(name));
 
-        Name = name.Trim();
+        Name = normalizedName;
         Description = description?.Trim() ?? null;
     }
 }

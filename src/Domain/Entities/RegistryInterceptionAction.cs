@@ -2,6 +2,8 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
+using Domain.ValueObjects;
+
 namespace Domain.Entities;
 
 /// <summary>
@@ -20,7 +22,7 @@ public sealed class RegistryInterceptionAction
     /// Використовується для категоризації та опису змісту радіоперехоплення. 
     /// Наприклад: "Спостереження", "Загроза", "Підтримка" тощо.
     /// </summary>
-    public string Name { get; private set; } = string.Empty;
+    public InterceptionActionCodeVo Name { get; private set; }
 
     /// <summary>
     /// Опис дії, який надає додаткову інформацію про зміст дії перехоплення. 
@@ -33,13 +35,13 @@ public sealed class RegistryInterceptionAction
     // -------------------------------------------------------------------------
     public static RegistryInterceptionAction Create(string name, string? description = null)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
+        var normalizedName = InterceptionActionCodeVo.Create(name)
+            ??throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
 
         return new RegistryInterceptionAction
         {
             Id = Guid.NewGuid(),
-            Name = name.Trim(),
+            Name = normalizedName,
             Description = description?.Trim() ?? null
         };
     }
@@ -49,10 +51,10 @@ public sealed class RegistryInterceptionAction
     // -------------------------------------------------------------------------
     public void Update(string name, string? description = null)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
+        var normalizedName = InterceptionActionCodeVo.Create(name)
+           ?? throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
 
-        Name = name.Trim();
+        Name = normalizedName;
         Description = description?.Trim() ?? null;
     }
 }
