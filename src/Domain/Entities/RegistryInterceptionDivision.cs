@@ -2,6 +2,8 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
+using Domain.ValueObjects;
+
 namespace Domain.Entities;
 
 /// <summary>
@@ -17,26 +19,28 @@ public sealed class RegistryInterceptionDivision
     /// <summary>
     /// Частота радіоперехоплення, унікальна не повторюється в регістрі.
     /// </summary>
-    public string FrequencyCode { get; private set; } = string.Empty;
+    public FrequencyCodeVo FrequencyCode { get; private set; }
 
     /// <summary>
     /// Назва підрозділу, не унікальна, може повторюватися в регістрі.
     /// </summary>
-    public string? DivisionName { get; private set; }     
+    public DivisionNameVo? DivisionName { get; private set; }
 
     // -------------------------------------------------------------------------
     // Factory
     // -------------------------------------------------------------------------
     public static RegistryInterceptionDivision Create(string frequencyCode, string? divisionName = null)
     {
-        if (string.IsNullOrWhiteSpace(frequencyCode))
-            throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
+        var normalizedFrequencyCode = FrequencyCodeVo.Create(frequencyCode)
+            ?? throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
+
+        var normalizedDivisionName = DivisionNameVo.Create(divisionName);
 
         return new RegistryInterceptionDivision
         {
             Id = Guid.NewGuid(),
-            FrequencyCode = frequencyCode.Trim(),
-            DivisionName = divisionName?.Trim() ?? null
+            FrequencyCode = normalizedFrequencyCode,
+            DivisionName = normalizedDivisionName
         };
     }
 
@@ -45,6 +49,6 @@ public sealed class RegistryInterceptionDivision
     // -------------------------------------------------------------------------
     public void Update(string? divisionName = null)
     {
-        DivisionName = divisionName?.Trim() ?? null;
+        DivisionName = DivisionNameVo.Create(divisionName);
     }
 }

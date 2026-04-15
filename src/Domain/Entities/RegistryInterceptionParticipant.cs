@@ -2,6 +2,8 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
+using Domain.ValueObjects;
+
 namespace Domain.Entities;
 
 /// <summary>
@@ -31,12 +33,12 @@ public sealed class RegistryInterceptionParticipant
     /// <summary>
     /// Частота радіоперехоплення, не унікальна, може повторюватися.
     /// </summary>
-    public string FrequencyCode { get; private set; } = string.Empty;
+    public FrequencyCodeVo FrequencyCode { get; private set; }
 
     /// <summary>
     /// Назва підрозділу, не унікальна, може повторюватися.
     /// </summary>
-    public string? DivisionName { get; private set; }
+    public DivisionNameVo? DivisionName { get; private set; }
 
     /// <summary>
     /// Ид назви ролі учасника перехоплення, не унікальна,
@@ -66,15 +68,17 @@ public sealed class RegistryInterceptionParticipant
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Ім'я учасника обов'язкове.", nameof(name));
 
-        if (string.IsNullOrWhiteSpace(frequencyCode))
-            throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
+        var normalizedFrequencyCode = FrequencyCodeVo.Create(frequencyCode)
+            ?? throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
+
+        var normalizedDivisionName = DivisionNameVo.Create(divisionName);
 
         return new RegistryInterceptionParticipant
         {
             Id = Guid.NewGuid(),
             Name = name.Trim(),
-            FrequencyCode = frequencyCode.Trim(),
-            DivisionName = divisionName?.Trim() ?? null,
+            FrequencyCode = normalizedFrequencyCode,
+            DivisionName = normalizedDivisionName,
             RegistryInterceptionParticipantRoleId = roleId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -89,12 +93,14 @@ public sealed class RegistryInterceptionParticipant
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Ім'я учасника обов'язкове.", nameof(name));
 
-        if (string.IsNullOrWhiteSpace(frequencyCode))
-            throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
+        var normalizedFrequencyCode = FrequencyCodeVo.Create(frequencyCode)
+             ?? throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
+
+        var normalizedDivisionName = DivisionNameVo.Create(divisionName);
 
         Name = name.Trim();
-        FrequencyCode = frequencyCode.Trim();
-        DivisionName = divisionName?.Trim() ?? null;
+        FrequencyCode = normalizedFrequencyCode;
+        DivisionName = normalizedDivisionName;
         RegistryInterceptionParticipantRoleId = roleId;
         UpdatedAt = DateTime.UtcNow;
     }

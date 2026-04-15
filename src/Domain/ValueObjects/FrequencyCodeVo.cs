@@ -7,27 +7,27 @@ using Common.Extensions;
 namespace Domain.ValueObjects;
 
 /// <summary>
-/// Value Object для назви підрозділу.
+/// Value Object для частоти у нормалізованому вигляді.
 /// </summary>
-public readonly record struct DivisionName
+public readonly record struct FrequencyCodeVo
 {
     /// <summary>
-    /// Нормалізоване значення підрозділу.
+    /// Нормалізоване значення частоти.
     /// </summary>
     public string Value { get; }
 
-    private DivisionName(string value)
+    private FrequencyCodeVo(string value)
         => Value = value;
 
     /// <summary>
     /// Створює VO з довільного вхідного рядка.
     /// </summary>
-    public static DivisionName? Create(string? value)
+    public static FrequencyCodeVo? Create(string? value)
     {
         var normalized = StringExtensions.NormalizedOrNull(value);
         return string.IsNullOrWhiteSpace(normalized)
             ? null
-            : new DivisionName(normalized);
+            : new FrequencyCodeVo(normalized);
     }
 
     public override string ToString() => Value;

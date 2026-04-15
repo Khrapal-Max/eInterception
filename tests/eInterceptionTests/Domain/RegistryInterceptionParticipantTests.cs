@@ -23,9 +23,9 @@ public class RegistryInterceptionParticipantTests
         // Assert
         Assert.NotEqual(Guid.Empty, participant.Id);
         Assert.Equal(name, participant.Name);
-        Assert.Equal(frequencyCode, participant.FrequencyCode);
+        Assert.Equal(frequencyCode, participant.FrequencyCode.Value);
         Assert.Equal(roleId, participant.RegistryInterceptionParticipantRoleId);
-        Assert.Equal(divisionName, participant.DivisionName);
+        Assert.Equal(divisionName, participant.DivisionName?.Value);
         Assert.True(participant.CreatedAt <= DateTime.UtcNow);
         Assert.True(participant.UpdatedAt <= DateTime.UtcNow);
     }
@@ -47,8 +47,8 @@ public class RegistryInterceptionParticipantTests
 
         // Assert
         Assert.Equal(newName, participant.Name);
-        Assert.Equal(newFrequencyCode, participant.FrequencyCode);
-        Assert.Equal(newDivisionName, participant.DivisionName);
+        Assert.Equal(newFrequencyCode, participant.FrequencyCode.Value);
+        Assert.Equal(newDivisionName, participant.DivisionName?.Value);
         Assert.Equal(newRoleId, participant.RegistryInterceptionParticipantRoleId);
         Assert.True(participant.UpdatedAt > participant.CreatedAt);
     }

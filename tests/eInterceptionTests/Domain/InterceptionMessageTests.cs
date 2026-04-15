@@ -33,8 +33,8 @@ public class InterceptionMessageTests
 
         // Assert
         Assert.Equal(observedDate, interceptionMessage.ObservedDate);
-        Assert.Equal(frequencyCode, interceptionMessage.FrequencyCode);
-        Assert.Equal(divisionName, interceptionMessage.DivisionName);
+        Assert.Equal(frequencyCode, interceptionMessage.FrequencyCode.Value);
+        Assert.Equal(divisionName, interceptionMessage.DivisionName?.Value);
         Assert.Equal(interceptionAction.Id, interceptionMessage.InterceptionActionId);
         Assert.Equal(unknownParticipantCount, interceptionMessage.UnknownParticipantCount);
         Assert.Equal(messageText, interceptionMessage.MessageText);
@@ -85,7 +85,7 @@ public class InterceptionMessageTests
     {
         // Arrange
         var interceptionAction = RegistryInterceptionAction.Create("Moving");
-        
+
         var interceptionMessage = InterceptionMessage.Create(
             DateTime.UtcNow,
             "123.45 MHz",
@@ -112,8 +112,8 @@ public class InterceptionMessageTests
         );
 
         // Assert
-        Assert.Equal(newFrequencyCode, interceptionMessage.FrequencyCode);
-        Assert.Equal(newDivisionName, interceptionMessage.DivisionName);
+        Assert.Equal(newFrequencyCode, interceptionMessage.FrequencyCode.Value);
+        Assert.Equal(newDivisionName, interceptionMessage.DivisionName?.Value);
         Assert.Equal(newInterceptionAction.Id, interceptionMessage.InterceptionActionId);
         Assert.Equal(newMessageText, interceptionMessage.MessageText);
         Assert.Equal(newCanBePutOnMap, interceptionMessage.CanBePutOnMap);
