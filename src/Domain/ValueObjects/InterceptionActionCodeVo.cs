@@ -2,7 +2,7 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
-using Common.Extensions;
+using Domain.Extensions;
 
 namespace Domain.ValueObjects;
 
@@ -19,7 +19,7 @@ public readonly record struct InterceptionActionCodeVo
 
     public static InterceptionActionCodeVo? Create(string? value)
     {
-        var normalized = StringExtensions.NormalizedOrNull(value);
+        var normalized = ValueExtensions.NormalizedOrNull(value);
 
         return string.IsNullOrWhiteSpace(normalized)
             ? null
