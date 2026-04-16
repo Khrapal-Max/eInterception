@@ -47,6 +47,11 @@ public sealed class RegistryInterceptionParticipant
     public Guid? RegistryInterceptionParticipantRoleId { get; private set; }
 
     /// <summary>
+    /// Ид профіля військової особи, який пов'язаний з учасником перехоплення.
+    /// </summary>
+    public Guid MilitaryProfileId { get; private set; }
+
+    /// <summary>
     /// Дата та час створення запису про учасника перехоплення.
     /// Встановлюється при створенні об'єкта і не змінюється.
     /// Універсальна дата та час (UTC) для забезпечення узгодженості в різних часових поясах.
@@ -63,8 +68,12 @@ public sealed class RegistryInterceptionParticipant
     // -------------------------------------------------------------------------
     // Factory
     // -------------------------------------------------------------------------
-    public static RegistryInterceptionParticipant Create(string name, string frequencyCode, string? divisionName = null, Guid? roleId = null)
+    public static RegistryInterceptionParticipant Create(Guid militaryProfileId,
+        string name, string frequencyCode, string? divisionName = null, Guid? roleId = null)
     {
+        if (militaryProfileId == Guid.Empty)
+            throw new ArgumentException("Ідентифікатор профілю є обов'язковим.", nameof(militaryProfileId));
+
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Ім'я учасника обов'язкове.", nameof(name));
 
@@ -80,6 +89,7 @@ public sealed class RegistryInterceptionParticipant
             FrequencyCode = normalizedFrequencyCode,
             DivisionName = normalizedDivisionName,
             RegistryInterceptionParticipantRoleId = roleId,
+            MilitaryProfileId = militaryProfileId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -102,6 +112,22 @@ public sealed class RegistryInterceptionParticipant
         FrequencyCode = normalizedFrequencyCode;
         DivisionName = normalizedDivisionName;
         RegistryInterceptionParticipantRoleId = roleId;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Переприв'язує manifestation до іншого фінального профілю.
+    /// Використовується в сценаріях merge на рівні Application.
+    /// </summary>
+    public void ReassignToMilitaryProfile(Guid militaryProfileId)
+    {
+        if (militaryProfileId == Guid.Empty)
+            throw new ArgumentException("Ідентифікатор профілю є обов'язковим.", nameof(militaryProfileId));
+
+        if (MilitaryProfileId == militaryProfileId)
+            return;
+
+        MilitaryProfileId = militaryProfileId;
         UpdatedAt = DateTime.UtcNow;
     }
 }

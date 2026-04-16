@@ -72,7 +72,7 @@ public class RegistryInterceptionDivisionTests
         var newDivisionName = "Updated Division";
 
         // Act
-        division.Update(frequencyCode, newDivisionName);
+        division.Update(newDivisionName);
 
         // Assert
         Assert.Equal(newDivisionName, division.DivisionName?.Value);

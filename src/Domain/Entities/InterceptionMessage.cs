@@ -2,8 +2,6 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
-using Domain.ValueObjects;
-
 namespace Domain.Entities;
 
 /// <summary>
@@ -20,20 +18,15 @@ public sealed class InterceptionMessage
     public DateTime ObservedDate { get; private set; }
 
     /// <summary>
-    /// Частота радіоперехоплення, не унікальна, може повторюватися.
+    /// Частота радіоперехоплення та назва підрозділу, не унікальна, може повторюватися.
     /// </summary>
-    public FrequencyCodeVo FrequencyCode { get; private set; }
-
-    /// <summary>
-    /// Назва підрозділу, не унікальна, може повторюватися.
-    /// </summary>
-    public DivisionNameVo? DivisionName { get; private set; }
+    public Guid RegistryInterceptionDivisionId { get; private set; }
 
     /// <summary>
     /// ДІя - характеризує та коротко описує зміст радіоперехоплення.
     /// Дії беруться з регістру активних дій.
     /// </summary>
-    public Guid InterceptionActionId { get; private set; }
+    public Guid RegistryInterceptionActionId { get; private set; }
 
     /// <summary>
     /// Кількість невідомих учасників у межах цього спостереження.
@@ -68,16 +61,15 @@ public sealed class InterceptionMessage
     /// <summary>
     /// Зв'язки з відомими учасниками перехоплення.
     /// </summary>
-    public IReadOnlyCollection<RegistryInterceptionParticipant> Participants => _participants;
+    public IReadOnlyCollection<InterceptionParticipantLink> Participants => _participants;
 
-    private readonly List<RegistryInterceptionParticipant> _participants = [];
+    private readonly List<InterceptionParticipantLink> _participants = [];
 
     // -------------------------------------------------------------------------
     // Factory
     // -------------------------------------------------------------------------
     public static InterceptionMessage Create(DateTime observedDate,
-        string frequencyCode,
-        string? divisionName,
+        Guid interceptionDivisionId,
         Guid interceptionActionId,
         string messageText,
         bool canBePutOnMap,
@@ -86,10 +78,8 @@ public sealed class InterceptionMessage
         if (observedDate == default)
             throw new ArgumentException("Дата спостереження обов'язкова.", nameof(observedDate));
 
-        var normalizedFrequencyCode = FrequencyCodeVo.Create(frequencyCode)
-            ?? throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
-
-        var normalizedDivisionName = DivisionNameVo.Create(divisionName);
+        if (interceptionDivisionId == Guid.Empty)
+            throw new ArgumentException("Дані підрозділа перехоплення обов'язковий.", nameof(interceptionDivisionId));
 
         if (interceptionActionId == Guid.Empty)
             throw new ArgumentException("Ідентифікатор дії перехоплення обов'язковий.", nameof(interceptionActionId));
@@ -104,9 +94,8 @@ public sealed class InterceptionMessage
         {
             Id = Guid.NewGuid(),
             ObservedDate = observedDate.ToUniversalTime(),
-            FrequencyCode = normalizedFrequencyCode,
-            DivisionName = normalizedDivisionName,
-            InterceptionActionId = interceptionActionId,
+            RegistryInterceptionDivisionId = interceptionDivisionId,
+            RegistryInterceptionActionId = interceptionActionId,
             MessageText = messageText,
             CanBePutOnMap = canBePutOnMap,
             UnknownParticipantCount = unknownParticipantCount,
@@ -118,17 +107,14 @@ public sealed class InterceptionMessage
     // -------------------------------------------------------------------------
     // Behaviour
     // -------------------------------------------------------------------------
-    public void Update(string frequencyCode,
-        string? divisionName,
+    public void Update(Guid interceptionDivisionId,
         Guid interceptionActionId,
         string messageText,
         bool canBePutOnMap,
         int unknownParticipantCount)
     {
-        var normalizedFrequencyCode = FrequencyCodeVo.Create(frequencyCode)
-           ?? throw new ArgumentException("Частота радіоперехоплення обов'язкова.", nameof(frequencyCode));
-
-        var normalizedDivisionName = DivisionNameVo.Create(divisionName);
+        if (interceptionDivisionId == Guid.Empty)
+            throw new ArgumentException("Дані підрозділа перехоплення обов'язковий.", nameof(interceptionDivisionId));
 
         if (interceptionActionId == Guid.Empty)
             throw new ArgumentException("Ідентифікатор дії перехоплення обов'язковий.", nameof(interceptionActionId));
@@ -139,9 +125,8 @@ public sealed class InterceptionMessage
         if (unknownParticipantCount < 0)
             throw new ArgumentException("Кількість невідомих учасників не може бути від'ємною.", nameof(unknownParticipantCount));
 
-        FrequencyCode = normalizedFrequencyCode;
-        DivisionName = normalizedDivisionName;
-        InterceptionActionId = interceptionActionId;
+        RegistryInterceptionDivisionId = interceptionDivisionId;
+        RegistryInterceptionActionId = interceptionActionId;
         MessageText = messageText;
         CanBePutOnMap = canBePutOnMap;
         UnknownParticipantCount = unknownParticipantCount;
@@ -152,12 +137,15 @@ public sealed class InterceptionMessage
     /// Додає відомого учасника до перехоплення.
     /// Один і той самий учасник не може бути прив'язаний до одного перехоплення двічі.
     /// </summary>
-    public void AddParticipant(RegistryInterceptionParticipant participant)
+    public void AddParticipant(Guid participantId)
     {
-        ArgumentNullException.ThrowIfNull(participant);
+        if (participantId == Guid.Empty)
+            throw new ArgumentException("Ід учасника є обов'язковим.", nameof(participantId));
 
-        if (_participants.Any(x => x.Id == participant.Id))
+        if (_participants.Any(x => x.RegistryInterceptionParticipantId == participantId))
             throw new InvalidOperationException("Учасник вже доданий до перехоплення.");
+
+        var participant = InterceptionParticipantLink.Create(Id, participantId);
 
         _participants.Add(participant);
         UpdatedAt = DateTime.UtcNow;
@@ -166,13 +154,13 @@ public sealed class InterceptionMessage
     /// <summary>
     /// Видаляє учасника з перехоплення.
     /// </summary>
-    public void RemoveParticipant(Guid registryInterceptionParticipantId)
+    public void RemoveParticipant(Guid participantId)
     {
-        if (registryInterceptionParticipantId == Guid.Empty)
-            throw new ArgumentException("Ідентифікатор учасника не може бути порожнім.", nameof(registryInterceptionParticipantId));
+        if (participantId == Guid.Empty)
+            throw new ArgumentException("Ідентифікатор учасника не може бути порожнім.", nameof(participantId));
 
         var participant = _participants
-            .FirstOrDefault(x => x.Id == registryInterceptionParticipantId)
+            .FirstOrDefault(x => x.RegistryInterceptionParticipantId == participantId)
             ?? throw new InvalidOperationException("Учасник не знайдений у перехопленні.");
 
         _participants.Remove(participant);

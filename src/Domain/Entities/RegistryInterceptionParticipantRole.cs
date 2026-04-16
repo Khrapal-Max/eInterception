@@ -19,7 +19,7 @@ public sealed class RegistryInterceptionParticipantRole
     /// <summary>
     /// Назва ролі (посада). Є унікальною в межах регістру ролей осіб. 
     /// </summary>
-    public ParticipantRoleCodeVo Name { get; private set; }
+    public ParticipantRoleNameVo Name { get; private set; }
 
     /// <summary>
     /// Опис ролі, який надає додаткову інформацію про роль учасника перехоплення. 
@@ -32,7 +32,7 @@ public sealed class RegistryInterceptionParticipantRole
     // -------------------------------------------------------------------------
     public static RegistryInterceptionParticipantRole Create(string name, string? description = null)
     {
-        var normalizedName = ParticipantRoleCodeVo.Create(name)
+        var normalizedName = ParticipantRoleNameVo.Create(name)
             ?? throw new ArgumentException("Назва ролі обов'язкова.", nameof(name));
 
         return new RegistryInterceptionParticipantRole
@@ -48,7 +48,7 @@ public sealed class RegistryInterceptionParticipantRole
     // -------------------------------------------------------------------------
     public void Update(string name, string? description = null)
     {
-        var normalizedName = ParticipantRoleCodeVo.Create(name)
+        var normalizedName = ParticipantRoleNameVo.Create(name)
            ?? throw new ArgumentException("Назва ролі обов'язкова.", nameof(name));
 
         Name = normalizedName;

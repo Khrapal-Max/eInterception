@@ -22,7 +22,7 @@ public sealed class RegistryInterceptionAction
     /// Використовується для категоризації та опису змісту радіоперехоплення. 
     /// Наприклад: "Спостереження", "Загроза", "Підтримка" тощо.
     /// </summary>
-    public InterceptionActionCodeVo Name { get; private set; }
+    public InterceptionActionNameVo Name { get; private set; }
 
     /// <summary>
     /// Опис дії, який надає додаткову інформацію про зміст дії перехоплення. 
@@ -35,8 +35,8 @@ public sealed class RegistryInterceptionAction
     // -------------------------------------------------------------------------
     public static RegistryInterceptionAction Create(string name, string? description = null)
     {
-        var normalizedName = InterceptionActionCodeVo.Create(name)
-            ??throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
+        var normalizedName = InterceptionActionNameVo.Create(name)
+            ?? throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
 
         return new RegistryInterceptionAction
         {
@@ -51,7 +51,7 @@ public sealed class RegistryInterceptionAction
     // -------------------------------------------------------------------------
     public void Update(string name, string? description = null)
     {
-        var normalizedName = InterceptionActionCodeVo.Create(name)
+        var normalizedName = InterceptionActionNameVo.Create(name)
            ?? throw new ArgumentException("Назва дії обов'язкова.", nameof(name));
 
         Name = normalizedName;

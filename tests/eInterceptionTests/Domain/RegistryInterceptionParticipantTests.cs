@@ -16,9 +16,10 @@ public class RegistryInterceptionParticipantTests
         var frequencyCode = "123.4500";
         var divisionName = "Alpha Division";
         var roleId = Guid.NewGuid();
+        var militaryProfileId = Guid.NewGuid();
 
         // Act
-        var participant = RegistryInterceptionParticipant.Create(name, frequencyCode, divisionName, roleId);
+        var participant = RegistryInterceptionParticipant.Create(militaryProfileId, name, frequencyCode, divisionName, roleId);
 
         // Assert
         Assert.NotEqual(Guid.Empty, participant.Id);
@@ -26,6 +27,7 @@ public class RegistryInterceptionParticipantTests
         Assert.Equal(frequencyCode, participant.FrequencyCode.Value);
         Assert.Equal(roleId, participant.RegistryInterceptionParticipantRoleId);
         Assert.Equal(divisionName, participant.DivisionName?.Value);
+        Assert.Equal(militaryProfileId, participant.MilitaryProfileId);
         Assert.True(participant.CreatedAt <= DateTime.UtcNow);
         Assert.True(participant.UpdatedAt <= DateTime.UtcNow);
     }
@@ -35,8 +37,9 @@ public class RegistryInterceptionParticipantTests
     {
         // Arrange
         var roleId = Guid.NewGuid();
+        var militaryProfileId = Guid.NewGuid();
 
-        var participant = RegistryInterceptionParticipant.Create("John Doe", "123.4500", "Alpha Division", roleId);
+        var participant = RegistryInterceptionParticipant.Create(militaryProfileId, "John Doe", "123.4500", "Alpha Division", roleId);
         var newName = "Jane Smith";
         var newFrequencyCode = "987.6500";
         var newDivisionName = "Beta Division";
@@ -57,12 +60,13 @@ public class RegistryInterceptionParticipantTests
     public void Create_ShouldThrowException_WhenNameIsNullOrWhitespace()
     {
         // Arrange
+        var militaryProfileId = Guid.NewGuid();
         string frequencyCode = "123.4500";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(null!, frequencyCode));
-        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(string.Empty, frequencyCode));
-        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create("   ", frequencyCode));
+        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(militaryProfileId, null!, frequencyCode));
+        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(militaryProfileId, string.Empty, frequencyCode));
+        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(militaryProfileId, "   ", frequencyCode));
     }
 
     [Fact]
@@ -70,11 +74,12 @@ public class RegistryInterceptionParticipantTests
     {
         // Arrange
         string name = "John Doe";
+        var militaryProfileId = Guid.NewGuid();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(name, null!));
-        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(name, string.Empty));
-        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(name, "   "));
+        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(militaryProfileId, name, null!));
+        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(militaryProfileId, name, string.Empty));
+        Assert.Throws<ArgumentException>(() => RegistryInterceptionParticipant.Create(militaryProfileId, name, "   "));
     }
 
     [Fact]
@@ -82,8 +87,9 @@ public class RegistryInterceptionParticipantTests
     {
         // Arrange
         var roleId = Guid.NewGuid();
+        var militaryProfileId = Guid.NewGuid();
 
-        var participant = RegistryInterceptionParticipant.Create("John Doe", "123.4500", "Alpha Division");
+        var participant = RegistryInterceptionParticipant.Create(militaryProfileId, "John Doe", "123.4500", "Alpha Division", roleId);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => participant.Update(null!, "987.6500", "Beta Division", roleId));
@@ -96,8 +102,9 @@ public class RegistryInterceptionParticipantTests
     {
         // Arrange
         var roleId = Guid.NewGuid();
+        var militaryProfileId = Guid.NewGuid();
 
-        var participant = RegistryInterceptionParticipant.Create("John Doe", "123.4500", "Alpha Division");
+        var participant = RegistryInterceptionParticipant.Create(militaryProfileId, "John Doe", "123.4500", "Alpha Division", roleId);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => participant.Update("Jane Smith", null!, "Beta Division", roleId));

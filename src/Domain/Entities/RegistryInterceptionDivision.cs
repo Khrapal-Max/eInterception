@@ -47,12 +47,8 @@ public sealed class RegistryInterceptionDivision
     // -------------------------------------------------------------------------
     // Behaviour
     // -------------------------------------------------------------------------
-    public void Update(string frequencyCode, string? divisionName = null)
+    public void Update(string? divisionName = null)
     {
-        var normalizedFrequencyCode = FrequencyCodeVo.Create(frequencyCode)
-           ?? throw new ArgumentNullException(nameof(frequencyCode), "Частота радіоперехоплення обов'язкова.");
-
-        FrequencyCode = normalizedFrequencyCode;
         DivisionName = DivisionNameVo.Create(divisionName);
     }
 }

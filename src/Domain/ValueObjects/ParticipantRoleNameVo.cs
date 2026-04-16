@@ -9,20 +9,20 @@ namespace Domain.ValueObjects;
 /// <summary>
 /// Value Object для коду ролі учасника.
 /// </summary>
-public readonly record struct ParticipantRoleCodeVo
+public readonly record struct ParticipantRoleNameVo
 {
     public string Value { get; }
 
-    private ParticipantRoleCodeVo(string value)
+    private ParticipantRoleNameVo(string value)
         => Value = value;
 
-    public static ParticipantRoleCodeVo? Create(string? value)
+    public static ParticipantRoleNameVo? Create(string? value)
     {
         var normalized = ValueExtensions.NormalizedOrNull(value);
 
         return string.IsNullOrWhiteSpace(normalized)
             ? null
-            : new ParticipantRoleCodeVo(normalized);
+            : new ParticipantRoleNameVo(normalized);
     }
 
     public override string ToString() => Value;
