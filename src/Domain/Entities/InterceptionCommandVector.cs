@@ -5,50 +5,54 @@
 namespace Domain.Entities;
 
 /// <summary>
-/// owned type агрегату спостереження, що представляє вектор перехоплення.
+/// Дочірня сутність агрегату <see cref="InterceptionMessage"/>,
+/// яка описує напрямок командного зв'язку між двома відомими учасниками
+/// в межах одного спостереження.
 /// </summary>
 public sealed class InterceptionCommandVector
 {
+    /// <summary>
+    /// Локальний ідентифікатор вектора всередині агрегату спостереження.
+    /// </summary>
     public Guid Id { get; private set; }
 
     /// <summary>
-    /// ид спостереження, до якого належить цей вектор перехоплення.
+    /// Ідентифікатор учасника-ініціатора команди.
     /// </summary>
-    public Guid InterceptionMessageId { get; private set; }
+    public Guid FromParticipantId { get; private set; }
 
     /// <summary>
-    /// Ид учасника перехоплення, який є ініціатором команди.
+    /// Ідентифікатор учасника-отримувача команди.
     /// </summary>
-    public Guid FromParticipantLinkId { get; private set; }
+    public Guid ToParticipantId { get; private set; }
 
     /// <summary>
-    /// Ид учасника перехоплення, який є отримувачем команди.
+    /// Створює новий вектор командування між двома різними учасниками.
     /// </summary>
-    public Guid ToParticipantLinkId { get; private set; }
-
     public static InterceptionCommandVector Create(
-        Guid interceptionMessageId,
-        Guid fromParticipantLinkId,
-        Guid toParticipantLinkId)
+        Guid fromParticipantId,
+        Guid toParticipantId)
     {
-        if (interceptionMessageId == Guid.Empty)
-            throw new ArgumentNullException(nameof(interceptionMessageId), "Ид спостереження не може бути порожнім.");
+        if (fromParticipantId == Guid.Empty)
+            throw new ArgumentException("Ідентифікатор учасника-ініціатора є обов'язковим.", nameof(fromParticipantId));
 
-        if (fromParticipantLinkId == Guid.Empty)
-            throw new ArgumentNullException(nameof(fromParticipantLinkId), "Ид учасника обов'язкове.");
+        if (toParticipantId == Guid.Empty)
+            throw new ArgumentException("Ідентифікатор учасника-отримувача є обов'язковим.", nameof(toParticipantId));
 
-        if (toParticipantLinkId == Guid.Empty)
-            throw new ArgumentNullException(nameof(toParticipantLinkId), "Ид учасника обов'язкове.");
-
-        if (fromParticipantLinkId == toParticipantLinkId)
-            throw new InvalidOperationException("Циклічне призначення не можливе.");
+        if (fromParticipantId == toParticipantId)
+            throw new InvalidOperationException("Циклічний вектор командування не дозволений.");
 
         return new InterceptionCommandVector
         {
             Id = Guid.NewGuid(),
-            InterceptionMessageId = interceptionMessageId,
-            FromParticipantLinkId = fromParticipantLinkId,
-            ToParticipantLinkId = toParticipantLinkId
+            FromParticipantId = fromParticipantId,
+            ToParticipantId = toParticipantId
         };
     }
+
+    /// <summary>
+    /// Перевіряє, чи посилається вектор на вказаного учасника.
+    /// </summary>
+    public bool ReferencesParticipant(Guid participantId)
+        => FromParticipantId == participantId || ToParticipantId == participantId;
 }

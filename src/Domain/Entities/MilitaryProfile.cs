@@ -2,173 +2,146 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
+using Domain.ValueObjects;
+
 namespace Domain.Entities;
 
 /// <summary>
-/// Канонічний профіль особи.
-/// Є фінальним aggregate root для звітів, аналітики та зведення
-/// кількох оперативних проявів однієї особи в один центр.
+/// Канонічний профіль військової особи.
+/// Є фінальним aggregate root для зведення оперативних проявів однієї особи
+/// та побудови аналітичних read-model.
 /// </summary>
 public sealed class MilitaryProfile
 {
+    /// <summary>
+    /// Ідентифікатор профілю.
+    /// </summary>
     public Guid Id { get; private set; }
 
     /// <summary>
-    /// Назва особи (позивний).
-    /// Саме ця назва повинна використовуватись у звітах.
+    /// Канонічний позивний особи.
+    /// Є обов'язковим для профілю.
     /// </summary>
-    public string Callsing { get; private set; } = string.Empty;
+    public string Callsign { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Канонічний підрозділ профілю.
-    /// Якщо ще не визначений - null.
+    /// Актуальний підрозділ профілю.
+    /// Може бути відсутнім, якщо підрозділ ще не визначено.
     /// </summary>
-    public Guid? RegistryInterceptionDivisionId { get; private set; }
+    public DivisionNameVo? DivisionName { get; private set; }
 
     /// <summary>
-    /// Роль особи, може бути не визначеною.
+    /// Ідентифікатор ролі з довідника ролей.
+    /// Може бути відсутнім, якщо роль ще не визначено.
     /// </summary>
     public Guid? RegistryInterceptionParticipantRoleId { get; private set; }
 
     /// <summary>
-    /// Підтверджені частоти профілю.
-    /// Використовуються для фінальної аналітики і побудови зв'язків.
-    /// </summary>
-    public IReadOnlyCollection<MilitaryProfileFrequency> Frequencies => _frequencies;
-
-    private readonly List<MilitaryProfileFrequency> _frequencies = [];
-
-    /// <summary>
-    /// Дата та час створення профілю.
+    /// Дата та час створення профілю у форматі UTC.
     /// </summary>
     public DateTime CreatedAt { get; private set; }
 
     /// <summary>
-    /// Дата та час останнього оновлення профілю.
+    /// Дата та час останнього оновлення профілю у форматі UTC.
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
 
-    // -------------------------------------------------------------------------
-    // Factory
-    // -------------------------------------------------------------------------
+    /// <summary>
+    /// Підтверджені частоти профілю.
+    /// Колекція зберігається як набір value object без окремої дочірньої сутності.
+    /// </summary>
+    public IReadOnlyCollection<FrequencyCodeVo> Frequencies => _frequencies;
+    private readonly List<FrequencyCodeVo> _frequencies = [];
 
     /// <summary>
-    /// Створення профілю військової особи на основі запису учасника перехоплення. 
-    /// Назва профілю буде встановлена на основі назви учасника перехоплення, 
-    /// а роль буде встановлена на основі ролі учасника перехоплення.
-    /// 
-    /// Новий профіль створюється для кожного нового учасника перехоплення з регістру учасників перехоплень.
+    /// Створює новий профіль військової особи.
+    /// Позивний та щонайменше одна частота є обов'язковими.
+    /// Підрозділ і роль можуть бути відсутніми на момент створення.
     /// </summary>
-    public static MilitaryProfile Create(string callsing,
-        Guid registryInterceptionDivisionId,
+    public static MilitaryProfile Create(
+        string callsign,
+        string frequencyCode,
+        string? divisionName = null,
         Guid? registryInterceptionParticipantRoleId = null)
     {
-        if (string.IsNullOrWhiteSpace(callsing))
-            throw new ArgumentException("Назва особи не може бути порожньою.", nameof(callsing));
+        var normalizedCallsign = NormalizeCallsign(callsign);
+        var normalizedFrequency = FrequencyCodeVo.Create(frequencyCode)
+            ?? throw new ArgumentException("Код частоти є обов'язковим.", nameof(frequencyCode));
 
-        if (registryInterceptionDivisionId == Guid.Empty)
-            throw new ArgumentException("Ідентифікатор підрозділу не може бути порожнім.", nameof(registryInterceptionDivisionId));
+        if (registryInterceptionParticipantRoleId == Guid.Empty)
+            throw new ArgumentException("Ідентифікатор ролі не може дорівнювати порожньому значенню.", nameof(registryInterceptionParticipantRoleId));
 
         var profile = new MilitaryProfile
         {
             Id = Guid.NewGuid(),
-            Callsing = callsing.Trim(),
-            RegistryInterceptionDivisionId = registryInterceptionDivisionId,
+            Callsign = normalizedCallsign,
+            DivisionName = DivisionNameVo.Create(divisionName),
             RegistryInterceptionParticipantRoleId = registryInterceptionParticipantRoleId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
-        profile._frequencies.Add(
-            MilitaryProfileFrequency.Create(profile.Id, registryInterceptionDivisionId));
+        profile._frequencies.Add(normalizedFrequency);
 
         return profile;
     }
 
-    // -------------------------------------------------------------------------
-    // Behaviour
-    // -------------------------------------------------------------------------
-
     /// <summary>
-    /// Дозволяє змінити підрозділ профілю. Якщо підрозділ не визначений, то він буде встановлений.
+    /// Оновлює основні реквізити профілю.
+    ///
+    /// Позивний залишається обов'язковим. Підрозділ і роль можуть бути очищені,
+    /// якщо для них передано <c>null</c>.
     /// </summary>
-    public void ChangeDivision(Guid registryInterceptionDivisionId)
+    public void Update(string callsign, string? divisionName, Guid? registryInterceptionParticipantRoleId)
     {
-        if (registryInterceptionDivisionId == Guid.Empty)
-            throw new ArgumentException("Ідентифікатор підрозділу не може бути порожнім.", nameof(registryInterceptionDivisionId));
+        if (registryInterceptionParticipantRoleId == Guid.Empty)
+            throw new ArgumentException("Порожній ідентифікатор ролі не допускається. Використовуйте null для очищення ролі.", nameof(registryInterceptionParticipantRoleId));
 
-        RegistryInterceptionDivisionId = registryInterceptionDivisionId;
+        Callsign = NormalizeCallsign(callsign);
+        DivisionName = DivisionNameVo.Create(divisionName);
+        RegistryInterceptionParticipantRoleId = registryInterceptionParticipantRoleId;
         UpdatedAt = DateTime.UtcNow;
     }
 
-    /// <summary>
-    /// Дозволяє очистити підрозділ профілю. Після цього підрозділ буде не визначений.
-    /// </summary>
-    public void ClearDivision()
-    {
-        RegistryInterceptionDivisionId = null;
-        UpdatedAt = DateTime.UtcNow;
-    }
 
     /// <summary>
-    /// Додає підтверджену частоту профілю.
-    /// Частота фіксується через registry division, щоб зберігати live-зв'язок
-    /// з актуальною назвою підрозділу.
+    /// Додає нову підтверджену частоту профілю.
     /// </summary>
-    public void AddFrequency(Guid registryInterceptionDivisionId)
+    public void AddFrequency(string frequencyCode)
     {
-        if (registryInterceptionDivisionId == Guid.Empty)
-            throw new ArgumentException("Ідентифікатор частоти/підрозділу не може бути порожнім.", nameof(registryInterceptionDivisionId));
+        var normalizedFrequency = FrequencyCodeVo.Create(frequencyCode)
+            ?? throw new ArgumentException("Код частоти не може бути порожнім.", nameof(frequencyCode));
 
-        if (_frequencies.Any(x => x.RegistryInterceptionDivisionId == registryInterceptionDivisionId))
+        if (_frequencies.Contains(normalizedFrequency))
             return;
 
-        _frequencies.Add(MilitaryProfileFrequency.Create(Id, registryInterceptionDivisionId));
+        _frequencies.Add(normalizedFrequency);
         UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
     /// Видаляє підтверджену частоту профілю.
-    /// У профілю має залишатися хоча б одна підтверджена частота.
+    /// У профілю має залишатися щонайменше одна частота.
     /// </summary>
-    public void RemoveFrequency(Guid registryInterceptionDivisionId)
+    public void RemoveFrequency(string frequencyCode)
     {
-        if (registryInterceptionDivisionId == Guid.Empty)
-            throw new ArgumentException("Ідентифікатор частоти/підрозділу не може бути порожнім.", nameof(registryInterceptionDivisionId));
+        var normalizedFrequency = FrequencyCodeVo.Create(frequencyCode)
+            ?? throw new ArgumentException("Код частоти не може бути порожнім.", nameof(frequencyCode));
 
-        var item = _frequencies
-            .FirstOrDefault(x => x.RegistryInterceptionDivisionId == registryInterceptionDivisionId)
-            ?? throw new InvalidOperationException("Частота профілю не знайдена.");
+        if (_frequencies.Count == 1 && _frequencies.Contains(normalizedFrequency))
+            throw new InvalidOperationException("У профілю має залишатися щонайменше одна частота.");
 
-        if (_frequencies.Count == 1)
-            throw new InvalidOperationException("У профілю має залишатися хоча б одна частота.");
-
-        _frequencies.Remove(item);
-
-        if (RegistryInterceptionDivisionId == registryInterceptionDivisionId)
-            RegistryInterceptionDivisionId = _frequencies.First().RegistryInterceptionDivisionId;
+        if (!_frequencies.Remove(normalizedFrequency))
+            throw new InvalidOperationException("Частоту профілю не знайдено.");
 
         UpdatedAt = DateTime.UtcNow;
     }
 
-    /// <summary>
-    /// Зміна ролі військової особи в профілі. Якщо роль не визначена, то вона буде встановлена.
-    /// </summary>
-    public void ChangeRole(Guid registryInterceptionParticipantRoleId)
+    private static string NormalizeCallsign(string callsign)
     {
-        if (registryInterceptionParticipantRoleId == Guid.Empty)
-            throw new ArgumentException("Ідентифікатор ролі не може бути порожнім.", nameof(registryInterceptionParticipantRoleId));
+        if (string.IsNullOrWhiteSpace(callsign))
+            throw new ArgumentException("Позивний профілю є обов'язковим.", nameof(callsign));
 
-        RegistryInterceptionParticipantRoleId = registryInterceptionParticipantRoleId;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Видалення ролі військової особи з профілю. Після цього роль буде не визначена.
-    /// </summary>
-    public void ClearRole()
-    {
-        RegistryInterceptionParticipantRoleId = null;
-        UpdatedAt = DateTime.UtcNow;
+        return callsign.Trim();
     }
 }
