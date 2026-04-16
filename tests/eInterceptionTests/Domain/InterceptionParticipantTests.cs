@@ -4,7 +4,11 @@
 
 namespace eInterceptionTests.Domain;
 
-public class InterceptionMessageTests
+public class InterceptionParticipantTests
 {
+    [Fact]
+    public void InterceptionParticipant_Creation_Success()
+    {
 
+    }
 }

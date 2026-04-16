@@ -17,7 +17,7 @@ public sealed class MilitaryProfile
     /// Назва особи (позивний).
     /// Саме ця назва повинна використовуватись у звітах.
     /// </summary>
-    public string DisplayName { get; private set; } = string.Empty;
+    public string Callsing { get; private set; } = string.Empty;
 
     /// <summary>
     /// Канонічний підрозділ профілю.
@@ -59,12 +59,12 @@ public sealed class MilitaryProfile
     /// 
     /// Новий профіль створюється для кожного нового учасника перехоплення з регістру учасників перехоплень.
     /// </summary>
-    public static MilitaryProfile Create(string name,
+    public static MilitaryProfile Create(string callsing,
         Guid registryInterceptionDivisionId,
         Guid? registryInterceptionParticipantRoleId = null)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Назва особи не може бути порожньою.", nameof(name));
+        if (string.IsNullOrWhiteSpace(callsing))
+            throw new ArgumentException("Назва особи не може бути порожньою.", nameof(callsing));
 
         if (registryInterceptionDivisionId == Guid.Empty)
             throw new ArgumentException("Ідентифікатор підрозділу не може бути порожнім.", nameof(registryInterceptionDivisionId));
@@ -72,7 +72,7 @@ public sealed class MilitaryProfile
         var profile = new MilitaryProfile
         {
             Id = Guid.NewGuid(),
-            DisplayName = name.Trim(),
+            Callsing = callsing.Trim(),
             RegistryInterceptionDivisionId = registryInterceptionDivisionId,
             RegistryInterceptionParticipantRoleId = registryInterceptionParticipantRoleId,
             CreatedAt = DateTime.UtcNow,
