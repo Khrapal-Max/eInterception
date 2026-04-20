@@ -149,8 +149,9 @@ public sealed class InterceptionMessage
     /// Учасник має бути попередньо зіставлений з існуючим або щойно створеним профілем.
     /// </summary>
     public Guid AddParticipant(
-        string callsign,
         Guid militaryProfileId,
+        string callsign,
+        string? divisionName = null,
         Guid? registryInterceptionParticipantRoleId = null)
     {
         if (string.IsNullOrWhiteSpace(callsign))
@@ -164,32 +165,15 @@ public sealed class InterceptionMessage
                 nameof(registryInterceptionParticipantRoleId));
 
         var participant = InterceptionParticipant.Create(
-            callsign,
             militaryProfileId,
+            callsign,
+            divisionName,
             registryInterceptionParticipantRoleId);
 
         _participants.Add(participant);
         UpdatedAt = DateTime.UtcNow;
 
         return participant.Id;
-    }
-
-    /// <summary>
-    /// Оновлює учасника без видалення та повторного створення.
-    /// Це дозволяє зберегти локальну ідентичність учасника та пов'язані з ним вектори.
-    /// </summary>
-    public void UpdateParticipant(
-        Guid participantId,
-        string callsign,
-        Guid? registryInterceptionParticipantRoleId = null)
-    {
-        var participant = FindParticipant(participantId);
-
-        participant.Update(
-            callsign,
-            registryInterceptionParticipantRoleId);
-
-        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -236,18 +220,6 @@ public sealed class InterceptionMessage
             ?? throw new InvalidOperationException("Вектор командування не знайдено.");
 
         _commandVectors.Remove(vector);
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Встановлює кількість невідомих учасників спостереження.
-    /// </summary>
-    public void SetUnknownParticipantCount(int value)
-    {
-        if (value < 0)
-            throw new ArgumentException("Кількість невідомих учасників не може бути від'ємною.", nameof(value));
-
-        UnknownParticipantCount = value;
         UpdatedAt = DateTime.UtcNow;
     }
 

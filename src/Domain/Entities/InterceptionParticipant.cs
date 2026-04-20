@@ -2,6 +2,8 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
+using Domain.ValueObjects;
+
 namespace Domain.Entities;
 
 /// <summary>
@@ -23,10 +25,10 @@ public sealed class InterceptionParticipant
     public string Callsign { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Ідентифікатор канонічного профілю військової особи.
-    /// Є обов'язковим і встановлюється лише в момент створення учасника.
+    /// Локально зафіксований підрозділ у межах конкретного спостереження.
+    /// Може бути відсутнім.
     /// </summary>
-    public Guid MilitaryProfileId { get; private set; }
+    public DivisionNameVo? DivisionName { get; private set; }
 
     /// <summary>
     /// Ідентифікатор ролі з довідника ролей учасників.
@@ -35,49 +37,34 @@ public sealed class InterceptionParticipant
     public Guid? RegistryInterceptionParticipantRoleId { get; private set; }
 
     /// <summary>
+    /// Ідентифікатор канонічного профілю військової особи.
+    /// Є обов'язковим і встановлюється лише в момент створення учасника.
+    /// </summary>
+    public Guid MilitaryProfileId { get; private set; }
+
+    /// <summary>
     /// Створює нового відомого учасника спостереження.
     /// Учасник завжди має бути прив'язаний до існуючого профілю.
     /// </summary>
     public static InterceptionParticipant Create(
-        string callsign,
         Guid militaryProfileId,
+        string callsign,
+        string? divisionName = null,
         Guid? registryInterceptionParticipantRoleId = null)
     {
         if (string.IsNullOrWhiteSpace(callsign))
             throw new ArgumentException("Позивний учасника є обов'язковим.", nameof(callsign));
 
         if (militaryProfileId == Guid.Empty)
-            throw new ArgumentException("Ідентифікатор військового профілю є обов'язковим.", nameof(militaryProfileId));
-
-        if (registryInterceptionParticipantRoleId == Guid.Empty)
-            throw new ArgumentException("Порожній ідентифікатор ролі не допускається. Використовуйте null для очищення ролі.",
-                nameof(registryInterceptionParticipantRoleId));
+            throw new ArgumentException("Ідентифікатор профілю є обов'язковим.", nameof(militaryProfileId));
 
         return new InterceptionParticipant
         {
             Id = Guid.NewGuid(),
             Callsign = callsign.Trim(),
-            MilitaryProfileId = militaryProfileId,
-            RegistryInterceptionParticipantRoleId = registryInterceptionParticipantRoleId
+            DivisionName = DivisionNameVo.Create(divisionName),
+            RegistryInterceptionParticipantRoleId = registryInterceptionParticipantRoleId,
+            MilitaryProfileId = militaryProfileId
         };
-    }
-
-    /// <summary>
-    /// Оновлює позивний та роль учасника без його видалення з агрегату.
-    /// Прив'язка до військового профілю не змінюється.
-    /// </summary>
-    public void Update(
-        string callsign,
-        Guid? registryInterceptionParticipantRoleId = null)
-    {
-        if (string.IsNullOrWhiteSpace(callsign))
-            throw new ArgumentException("Позивний учасника є обов'язковим.", nameof(callsign));
-
-        if (registryInterceptionParticipantRoleId == Guid.Empty)
-            throw new ArgumentException("Порожній ідентифікатор ролі не допускається. Використовуйте null для очищення ролі.",
-                nameof(registryInterceptionParticipantRoleId));
-
-        Callsign = callsign.Trim();
-        RegistryInterceptionParticipantRoleId = registryInterceptionParticipantRoleId;
     }
 }

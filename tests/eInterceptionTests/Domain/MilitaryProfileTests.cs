@@ -1,0 +1,262 @@
+﻿//-----------------------------------------------------------------------------
+// All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
+//-----------------------------------------------------------------------------
+
+using Domain.Entities;
+
+namespace eInterceptionTests.Domain;
+
+public class MilitaryProfileTests
+{
+    [Fact]
+    public void CreateMilitaryProfile_ValidData_ShouldSucceed()
+    {
+        // Arrange
+        var callsign = "Alpha";
+        var frequency = "123.45";
+        var divisionName = "1st Infantry";
+        var roleId = Guid.NewGuid();
+
+        // Act
+        var profile = MilitaryProfile.Create(callsign, frequency, divisionName, roleId);
+
+        // Assert
+        Assert.NotNull(profile);
+        Assert.IsType<Guid>(profile.Id);
+        Assert.Equal(callsign, profile.Callsign);
+        Assert.Single(profile.Frequencies);
+        Assert.Equal(frequency, profile.Frequencies.First().Value);
+        Assert.Equal(divisionName, profile.DivisionName?.Value);
+        Assert.Equal(roleId, profile.RegistryInterceptionParticipantRoleId);
+        Assert.True(profile.CreatedAt <= DateTime.UtcNow);
+        Assert.True(profile.UpdatedAt <= DateTime.UtcNow);
+    }
+
+    [Fact]
+    public void CreateMilitaryProfile_MissingCallsign_ShouldThrow()
+    {
+        // Arrange
+        string? callsign = null;
+        var frequency = "123.45";
+        var roleId = Guid.NewGuid();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => MilitaryProfile.Create(callsign!, frequency, null, roleId));
+    }
+
+    [Fact]
+    public void CreateMilitaryProfile_MissingFrequency_ShouldThrow()
+    {
+        // Arrange
+        var callsign = "Bravo";
+        string? frequency = null;
+        var roleId = Guid.NewGuid();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => MilitaryProfile.Create(callsign, frequency!, null, roleId));
+    }
+
+    [Fact]
+    public void CreateMilitaryProfile_EmptyRoleId_ShouldThrow()
+    {
+        // Arrange
+        var callsign = "Charlie";
+        var frequency = "456.78";
+        var emptyRoleId = Guid.Empty;
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => MilitaryProfile.Create(callsign, frequency, null, emptyRoleId));
+    }
+
+    [Fact]
+    public void UpdateMilitaryProfile_ValidData_ShouldSucceed()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Delta", "789.01", "2nd Armored", Guid.NewGuid());
+        var newCallsign = "Echo";
+        var newDivisionName = "3rd Cavalry";
+        var newRoleId = Guid.NewGuid();
+
+        // Act
+        profile.Update(newCallsign, newDivisionName, newRoleId);
+
+        // Assert
+        Assert.Equal(newCallsign, profile.Callsign);
+        Assert.Equal(newDivisionName, profile.DivisionName?.Value);
+        Assert.Equal(newRoleId, profile.RegistryInterceptionParticipantRoleId);
+        Assert.True(profile.UpdatedAt > profile.CreatedAt);
+    }
+
+    [Fact]
+    public void UpdateMilitaryProfile_ClearOptionalFields_ShouldSucceed()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Foxtrot", "321.09", "4th Artillery", Guid.NewGuid());
+        var newCallsign = "Golf";
+
+        // Act
+        profile.Update(newCallsign, null, null);
+
+        // Assert
+        Assert.Equal(newCallsign, profile.Callsign);
+        Assert.Null(profile.DivisionName);
+        Assert.Null(profile.RegistryInterceptionParticipantRoleId);
+        Assert.True(profile.UpdatedAt > profile.CreatedAt);
+    }
+
+    [Fact]
+    public void UpdateMilitaryProfile_MissingCallsign_ShouldThrow()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Hotel", "654.32", "5th Airborne", Guid.NewGuid());
+        string? newCallsign = null;
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => profile.Update(newCallsign!, "New Division", Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void UpdateMilitaryProfile_EmptyRoleId_ShouldThrow()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("India", "987.65", "6th Special Forces", Guid.NewGuid());
+        var newCallsign = "Juliet";
+        var emptyRoleId = Guid.Empty;
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => profile.Update(newCallsign, "New Division", emptyRoleId));
+    }
+
+    [Fact]
+    public void CreateMilitaryProfile_NormalizesCallsignAndFrequency()
+    {
+        // Arrange
+        var callsign = "  Kilo  ";
+        var frequency = "  111.22  ";
+        var roleId = Guid.NewGuid();
+
+        // Act
+        var profile = MilitaryProfile.Create(callsign, frequency, null, roleId);
+
+        // Assert
+        Assert.Equal("Kilo", profile.Callsign);
+        Assert.Equal("111.22", profile.Frequencies.First().Value);
+    }
+
+    [Fact]
+    public void UpdateMilitaryProfile_NormalizesCallsign()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Lima", "222.33", null, Guid.NewGuid());
+        var newCallsign = "  Mike  ";
+
+        // Act
+        profile.Update(newCallsign, null, null);
+
+        // Assert
+        Assert.Equal("Mike", profile.Callsign);
+    }
+
+    [Fact]
+    public void CreateMilitaryProfile_AdditionalFrequencies_ShouldSucceed()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("November", "333.44", null, Guid.NewGuid());
+        var additionalFrequency = "444.55";
+
+        // Act
+        profile.AddFrequency(additionalFrequency);
+
+        // Assert
+        Assert.Equal(2, profile.Frequencies.Count);
+        Assert.Contains(profile.Frequencies, f => f.Value == additionalFrequency);
+    }
+
+    [Fact]
+    public void CreateMilitaryProfile_DuplicateFrequency_ShouldNotAdd()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Oscar", "555.66", null, Guid.NewGuid());
+        var duplicateFrequency = "555.66";
+
+        // Act
+        profile.AddFrequency(duplicateFrequency);
+
+        // Assert
+        Assert.Single(profile.Frequencies);
+    }
+
+    [Fact]
+    public void AddFrequency_InvalidFrequency_ShouldThrow()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Papa", "666.77", null, Guid.NewGuid());
+        var invalidFrequency = default(string);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => profile.AddFrequency(invalidFrequency!));
+    }
+
+    [Fact]
+    public void RemoveFrequency_ValidFrequency_ShouldSucceed()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Quebec", "777.88", null, Guid.NewGuid());
+        var additionalFrequency = "888.99";
+        profile.AddFrequency(additionalFrequency);
+
+        // Act
+        profile.RemoveFrequency("777.88");
+
+        // Assert
+        Assert.Single(profile.Frequencies);
+        Assert.Contains(profile.Frequencies, f => f.Value == additionalFrequency);
+    }
+
+    [Fact]
+    public void RemoveFrequency_LastRemainingFrequency_ShouldThrow()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Papa", "666.77", null, Guid.NewGuid());
+        var frequencyToRemove = "666.77";
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => profile.RemoveFrequency(frequencyToRemove));
+    }
+
+    [Fact]
+    public void RemoveFrequency_InvalidFrequency_ShouldThrow()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Romeo", "999.00", null, Guid.NewGuid());
+        var invalidFrequency = default(string);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => profile.RemoveFrequency(invalidFrequency!));
+    }
+
+    [Fact]
+    public void RemoveFrequency_NonExistingFrequency_ShouldThrow()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Sierra", "000.11", null, Guid.NewGuid());
+        var nonExistingFrequency = "111.22";
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => profile.RemoveFrequency(nonExistingFrequency));
+    }
+
+    [Fact]
+    public void MilitaryProfile_UpdatedAt_ShouldUpdateOnChanges()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Sierra", "000.11", null, Guid.NewGuid());
+        var originalUpdatedAt = profile.UpdatedAt;
+
+        // Act
+        profile.Update("Sierra Updated", null, null);
+
+        // Assert
+        Assert.True(profile.UpdatedAt > originalUpdatedAt);
+    }
+}
