@@ -29,8 +29,13 @@ public sealed class InterceptionMessage
     public FrequencyCodeVo FrequencyCode { get; private set; }
 
     /// <summary>
-    /// Підрозділ, якому атрибутовано спостереження.
-    /// Може бути відсутнім, якщо підрозділ не визначено.
+    /// Назва підрозділу, зафіксована у спостереженні як snapshot.
+    /// 
+    /// Це не канонічний ідентифікатор підрозділу, а історичне значення,
+    /// що відображає введену або підтверджену оператором назву на момент запису.
+    /// Канонічний історичний резолв підрозділу виконується через
+    /// <see cref="ObservedDate"/> + <see cref="FrequencyCode"/> та історію
+    /// <see cref="DivisionFrequencyAssignment"/>.
     /// </summary>
     public DivisionNameVo? DivisionName { get; private set; }
 

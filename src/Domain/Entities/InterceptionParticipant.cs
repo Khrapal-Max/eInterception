@@ -25,8 +25,8 @@ public sealed class InterceptionParticipant
     public string Callsign { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Локально зафіксований підрозділ у межах конкретного спостереження.
-    /// Може бути відсутнім.
+    /// Локально зафіксована назва підрозділу у межах конкретного спостереження.
+    /// Це snapshot-значення факту, а не канонічний link на профіль підрозділу.
     /// </summary>
     public DivisionNameVo? DivisionName { get; private set; }
 

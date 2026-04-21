@@ -167,7 +167,7 @@ public class InterceptionMessageTests
         var message = InterceptionMessage.Create(DateTime.UtcNow, "152.1500", "Division A", Guid.NewGuid(), "Initial message text", true, 2);
 
         var participant = InterceptionParticipant.Create(Guid.NewGuid(), "Callsign 1", "Division A", Guid.NewGuid());
-        var militaryprofile = MilitaryProfile.Create(participant.Callsign, "152.1500", "Division A", Guid.NewGuid());
+        var militaryprofile = MilitaryProfile.Create(participant.Callsign, "152.1500", Guid.NewGuid(), Guid.NewGuid());
 
         // Act
         message.AddParticipant(militaryprofile.Id, participant.Callsign);
@@ -182,7 +182,7 @@ public class InterceptionMessageTests
         // Arrange
         var message = InterceptionMessage.Create(DateTime.UtcNow, "152.1500", "Division A", Guid.NewGuid(), "Initial message text", true, 2);
 
-        var militaryprofile = MilitaryProfile.Create("Callsign 1", "152.1500", "Division A", Guid.NewGuid());
+        var militaryprofile = MilitaryProfile.Create("Callsign 1", "152.1500", Guid.NewGuid(), Guid.NewGuid());
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => message.AddParticipant(militaryprofile.Id, null!));
@@ -215,7 +215,7 @@ public class InterceptionMessageTests
         var message = InterceptionMessage.Create(DateTime.UtcNow, "152.1500", "Division A", Guid.NewGuid(), "Initial message text", true, 2);
         var callsign = "Callsign 1";
 
-        var militaryprofile = MilitaryProfile.Create(callsign, "152.1500", "Division A", Guid.NewGuid());
+        var militaryprofile = MilitaryProfile.Create(callsign, "152.1500", Guid.NewGuid(), Guid.NewGuid());
         message.AddParticipant(militaryprofile.Id, callsign);
 
         // Act

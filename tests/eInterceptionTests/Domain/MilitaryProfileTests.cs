@@ -14,19 +14,18 @@ public class MilitaryProfileTests
         // Arrange
         var callsign = "Alpha";
         var frequency = "123.45";
-        var divisionName = "1st Infantry";
+        var divisionId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
 
         // Act
-        var profile = MilitaryProfile.Create(callsign, frequency, divisionName, roleId);
-
+        var profile = MilitaryProfile.Create(callsign, frequency, divisionId, roleId);
         // Assert
         Assert.NotNull(profile);
         Assert.IsType<Guid>(profile.Id);
         Assert.Equal(callsign, profile.Callsign);
         Assert.Single(profile.Frequencies);
         Assert.Equal(frequency, profile.Frequencies.First().Value);
-        Assert.Equal(divisionName, profile.DivisionName?.Value);
+        Assert.Equal(divisionId, profile.DivisionProfileId);
         Assert.Equal(roleId, profile.RegistryInterceptionParticipantRoleId);
         Assert.True(profile.CreatedAt <= DateTime.UtcNow);
         Assert.True(profile.UpdatedAt <= DateTime.UtcNow);
@@ -72,17 +71,16 @@ public class MilitaryProfileTests
     public void UpdateMilitaryProfile_ValidData_ShouldSucceed()
     {
         // Arrange
-        var profile = MilitaryProfile.Create("Delta", "789.01", "2nd Armored", Guid.NewGuid());
+        var profile = MilitaryProfile.Create("Delta", "789.01", Guid.NewGuid(), Guid.NewGuid());
         var newCallsign = "Echo";
-        var newDivisionName = "3rd Cavalry";
+        var newDivisionId = Guid.NewGuid();
         var newRoleId = Guid.NewGuid();
 
         // Act
-        profile.Update(newCallsign, newDivisionName, newRoleId);
-
+        profile.Update(newCallsign, newDivisionId, newRoleId);
         // Assert
         Assert.Equal(newCallsign, profile.Callsign);
-        Assert.Equal(newDivisionName, profile.DivisionName?.Value);
+        Assert.Equal(newDivisionId, profile.DivisionProfileId);
         Assert.Equal(newRoleId, profile.RegistryInterceptionParticipantRoleId);
         Assert.True(profile.UpdatedAt > profile.CreatedAt);
     }
@@ -91,7 +89,7 @@ public class MilitaryProfileTests
     public void UpdateMilitaryProfile_ClearOptionalFields_ShouldSucceed()
     {
         // Arrange
-        var profile = MilitaryProfile.Create("Foxtrot", "321.09", "4th Artillery", Guid.NewGuid());
+        var profile = MilitaryProfile.Create("Foxtrot", "321.09", Guid.NewGuid(), Guid.NewGuid());
         var newCallsign = "Golf";
 
         // Act
@@ -99,7 +97,7 @@ public class MilitaryProfileTests
 
         // Assert
         Assert.Equal(newCallsign, profile.Callsign);
-        Assert.Null(profile.DivisionName);
+        Assert.Null(profile.DivisionProfileId);
         Assert.Null(profile.RegistryInterceptionParticipantRoleId);
         Assert.True(profile.UpdatedAt > profile.CreatedAt);
     }
@@ -108,23 +106,23 @@ public class MilitaryProfileTests
     public void UpdateMilitaryProfile_MissingCallsign_ShouldThrow()
     {
         // Arrange
-        var profile = MilitaryProfile.Create("Hotel", "654.32", "5th Airborne", Guid.NewGuid());
+        var profile = MilitaryProfile.Create("Hotel", "654.32", Guid.NewGuid(), Guid.NewGuid());
         string? newCallsign = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => profile.Update(newCallsign!, "New Division", Guid.NewGuid()));
+        Assert.Throws<ArgumentException>(() => profile.Update(newCallsign!, Guid.NewGuid(), Guid.NewGuid()));
     }
 
     [Fact]
     public void UpdateMilitaryProfile_EmptyRoleId_ShouldThrow()
     {
         // Arrange
-        var profile = MilitaryProfile.Create("India", "987.65", "6th Special Forces", Guid.NewGuid());
+        var profile = MilitaryProfile.Create("India", "987.65", Guid.NewGuid(), Guid.NewGuid());
         var newCallsign = "Juliet";
         var emptyRoleId = Guid.Empty;
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => profile.Update(newCallsign, "New Division", emptyRoleId));
+        Assert.Throws<ArgumentException>(() => profile.Update(newCallsign, Guid.NewGuid(), emptyRoleId));
     }
 
     [Fact]

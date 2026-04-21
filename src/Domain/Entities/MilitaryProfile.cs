@@ -25,10 +25,10 @@ public sealed class MilitaryProfile
     public string Callsign { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Актуальний підрозділ профілю.
-    /// Може бути відсутнім, якщо підрозділ ще не визначено.
+    /// Ідентифікатор актуального канонічного профілю підрозділу.
+    /// Може бути відсутнім, якщо підрозділ для особи ще не визначено.
     /// </summary>
-    public DivisionNameVo? DivisionName { get; private set; }
+    public Guid? DivisionProfileId { get; private set; }
 
     /// <summary>
     /// Ідентифікатор ролі з довідника ролей.
@@ -59,23 +59,30 @@ public sealed class MilitaryProfile
     /// Підрозділ і роль можуть бути відсутніми на момент створення.
     /// </summary>
     public static MilitaryProfile Create(
-        string callsign,
-        string frequencyCode,
-        string? divisionName = null,
-        Guid? registryInterceptionParticipantRoleId = null)
+    string callsign,
+    string frequencyCode,
+    Guid? divisionProfileId = null,
+    Guid? registryInterceptionParticipantRoleId = null)
     {
         var normalizedCallsign = NormalizeCallsign(callsign);
         var normalizedFrequency = FrequencyCodeVo.Create(frequencyCode)
             ?? throw new ArgumentException("Код частоти є обов'язковим.", nameof(frequencyCode));
 
+        if (divisionProfileId == Guid.Empty)
+            throw new ArgumentException(
+                "Порожній ідентифікатор профілю підрозділу не допускається. Використовуйте null для очищення значення.",
+                nameof(divisionProfileId));
+
         if (registryInterceptionParticipantRoleId == Guid.Empty)
-            throw new ArgumentException("Ідентифікатор ролі не може дорівнювати порожньому значенню.", nameof(registryInterceptionParticipantRoleId));
+            throw new ArgumentException(
+                "Ідентифікатор ролі не може дорівнювати порожньому значенню.",
+                nameof(registryInterceptionParticipantRoleId));
 
         var profile = new MilitaryProfile
         {
             Id = Guid.NewGuid(),
             Callsign = normalizedCallsign,
-            DivisionName = DivisionNameVo.Create(divisionName),
+            DivisionProfileId = divisionProfileId,
             RegistryInterceptionParticipantRoleId = registryInterceptionParticipantRoleId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -88,21 +95,30 @@ public sealed class MilitaryProfile
 
     /// <summary>
     /// Оновлює основні реквізити профілю.
-    ///
+    /// 
     /// Позивний залишається обов'язковим. Підрозділ і роль можуть бути очищені,
     /// якщо для них передано <c>null</c>.
     /// </summary>
-    public void Update(string callsign, string? divisionName, Guid? registryInterceptionParticipantRoleId)
+    public void Update(
+        string callsign,
+        Guid? divisionProfileId,
+        Guid? registryInterceptionParticipantRoleId)
     {
+        if (divisionProfileId == Guid.Empty)
+            throw new ArgumentException(
+                "Порожній ідентифікатор профілю підрозділу не допускається. Використовуйте null для очищення значення.",
+                nameof(divisionProfileId));
+
         if (registryInterceptionParticipantRoleId == Guid.Empty)
-            throw new ArgumentException("Порожній ідентифікатор ролі не допускається. Використовуйте null для очищення ролі.", nameof(registryInterceptionParticipantRoleId));
+            throw new ArgumentException(
+                "Порожній ідентифікатор ролі не допускається. Використовуйте null для очищення ролі.",
+                nameof(registryInterceptionParticipantRoleId));
 
         Callsign = NormalizeCallsign(callsign);
-        DivisionName = DivisionNameVo.Create(divisionName);
+        DivisionProfileId = divisionProfileId;
         RegistryInterceptionParticipantRoleId = registryInterceptionParticipantRoleId;
         UpdatedAt = DateTime.UtcNow;
     }
-
 
     /// <summary>
     /// Додає нову підтверджену частоту профілю.
