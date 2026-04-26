@@ -1,6 +1,17 @@
+//-----------------------------------------------------------------------------
+// All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
+//-----------------------------------------------------------------------------
+
+using Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using WebUI.Components;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+{
+    options.UseSqlite("Data Source=data/interception.db");
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

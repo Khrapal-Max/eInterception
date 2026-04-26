@@ -48,10 +48,10 @@ public sealed class MilitaryProfile
 
     /// <summary>
     /// Підтверджені частоти профілю.
-    /// Колекція зберігається як набір value object без окремої дочірньої сутності.
+    /// Керуються лише через агрегат <see cref="MilitaryProfile"/>.
     /// </summary>
-    public IReadOnlyCollection<FrequencyCodeVo> Frequencies => _frequencies;
-    private readonly List<FrequencyCodeVo> _frequencies = [];
+    public IReadOnlyCollection<MilitaryProfileFrequency> Frequencies => _frequencies;
+    private readonly List<MilitaryProfileFrequency> _frequencies = [];
 
     /// <summary>
     /// Створює новий профіль військової особи.
@@ -88,7 +88,7 @@ public sealed class MilitaryProfile
             UpdatedAt = DateTime.UtcNow
         };
 
-        profile._frequencies.Add(normalizedFrequency);
+        profile._frequencies.Add(MilitaryProfileFrequency.Create(normalizedFrequency.Value));
 
         return profile;
     }
@@ -128,10 +128,10 @@ public sealed class MilitaryProfile
         var normalizedFrequency = FrequencyCodeVo.Create(frequencyCode)
             ?? throw new ArgumentException("Код частоти не може бути порожнім.", nameof(frequencyCode));
 
-        if (_frequencies.Contains(normalizedFrequency))
+        if (_frequencies.Any(x => x.FrequencyCode == normalizedFrequency))
             return;
 
-        _frequencies.Add(normalizedFrequency);
+        _frequencies.Add(MilitaryProfileFrequency.Create(normalizedFrequency.Value));
         UpdatedAt = DateTime.UtcNow;
     }
 
@@ -144,12 +144,14 @@ public sealed class MilitaryProfile
         var normalizedFrequency = FrequencyCodeVo.Create(frequencyCode)
             ?? throw new ArgumentException("Код частоти не може бути порожнім.", nameof(frequencyCode));
 
-        if (_frequencies.Count == 1 && _frequencies.Contains(normalizedFrequency))
-            throw new InvalidOperationException("У профілю має залишатися щонайменше одна частота.");
-
-        if (!_frequencies.Remove(normalizedFrequency))
+        var frequency = _frequencies.FirstOrDefault(x => x.FrequencyCode == normalizedFrequency);
+        if (frequency is null)
             throw new InvalidOperationException("Частоту профілю не знайдено.");
 
+        if (_frequencies.Count == 1)
+            throw new InvalidOperationException("У профілю має залишатися щонайменше одна частота.");
+
+        _frequencies.Remove(frequency);
         UpdatedAt = DateTime.UtcNow;
     }
 

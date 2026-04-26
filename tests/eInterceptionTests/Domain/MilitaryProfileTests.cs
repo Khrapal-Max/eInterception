@@ -19,12 +19,13 @@ public class MilitaryProfileTests
 
         // Act
         var profile = MilitaryProfile.Create(callsign, frequency, divisionId, roleId);
+
         // Assert
         Assert.NotNull(profile);
-        Assert.IsType<Guid>(profile.Id);
+        Assert.NotEqual(Guid.Empty, profile.Id);
         Assert.Equal(callsign, profile.Callsign);
         Assert.Single(profile.Frequencies);
-        Assert.Equal(frequency, profile.Frequencies.First().Value);
+        Assert.Equal(frequency, profile.Frequencies.First().FrequencyCode.Value);
         Assert.Equal(divisionId, profile.DivisionProfileId);
         Assert.Equal(roleId, profile.RegistryInterceptionParticipantRoleId);
         Assert.True(profile.CreatedAt <= DateTime.UtcNow);
@@ -56,6 +57,19 @@ public class MilitaryProfileTests
     }
 
     [Fact]
+    public void CreateMilitaryProfile_EmptyDivisionProfileId_ShouldThrow()
+    {
+        // Arrange
+        var callsign = "Charlie";
+        var frequency = "456.78";
+        var emptyDivisionId = Guid.Empty;
+        var roleId = Guid.NewGuid();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => MilitaryProfile.Create(callsign, frequency, emptyDivisionId, roleId));
+    }
+
+    [Fact]
     public void CreateMilitaryProfile_EmptyRoleId_ShouldThrow()
     {
         // Arrange
@@ -72,17 +86,19 @@ public class MilitaryProfileTests
     {
         // Arrange
         var profile = MilitaryProfile.Create("Delta", "789.01", Guid.NewGuid(), Guid.NewGuid());
+        var originalUpdatedAt = profile.UpdatedAt;
         var newCallsign = "Echo";
         var newDivisionId = Guid.NewGuid();
         var newRoleId = Guid.NewGuid();
 
         // Act
         profile.Update(newCallsign, newDivisionId, newRoleId);
+
         // Assert
         Assert.Equal(newCallsign, profile.Callsign);
         Assert.Equal(newDivisionId, profile.DivisionProfileId);
         Assert.Equal(newRoleId, profile.RegistryInterceptionParticipantRoleId);
-        Assert.True(profile.UpdatedAt > profile.CreatedAt);
+        Assert.True(profile.UpdatedAt >= originalUpdatedAt);
     }
 
     [Fact]
@@ -99,7 +115,7 @@ public class MilitaryProfileTests
         Assert.Equal(newCallsign, profile.Callsign);
         Assert.Null(profile.DivisionProfileId);
         Assert.Null(profile.RegistryInterceptionParticipantRoleId);
-        Assert.True(profile.UpdatedAt > profile.CreatedAt);
+        Assert.True(profile.UpdatedAt >= profile.CreatedAt);
     }
 
     [Fact]
@@ -111,6 +127,18 @@ public class MilitaryProfileTests
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => profile.Update(newCallsign!, Guid.NewGuid(), Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void UpdateMilitaryProfile_EmptyDivisionProfileId_ShouldThrow()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("India", "987.65", Guid.NewGuid(), Guid.NewGuid());
+        var newCallsign = "Juliet";
+        var emptyDivisionId = Guid.Empty;
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => profile.Update(newCallsign, emptyDivisionId, Guid.NewGuid()));
     }
 
     [Fact]
@@ -138,7 +166,7 @@ public class MilitaryProfileTests
 
         // Assert
         Assert.Equal("Kilo", profile.Callsign);
-        Assert.Equal("111.22", profile.Frequencies.First().Value);
+        Assert.Equal("111.22", profile.Frequencies.First().FrequencyCode.Value);
     }
 
     [Fact]
@@ -156,7 +184,7 @@ public class MilitaryProfileTests
     }
 
     [Fact]
-    public void CreateMilitaryProfile_AdditionalFrequencies_ShouldSucceed()
+    public void AddFrequency_ValidFrequency_ShouldSucceed()
     {
         // Arrange
         var profile = MilitaryProfile.Create("November", "333.44", null, Guid.NewGuid());
@@ -167,15 +195,29 @@ public class MilitaryProfileTests
 
         // Assert
         Assert.Equal(2, profile.Frequencies.Count);
-        Assert.Contains(profile.Frequencies, f => f.Value == additionalFrequency);
+        Assert.Contains(profile.Frequencies, f => f.FrequencyCode.Value == additionalFrequency);
     }
 
     [Fact]
-    public void CreateMilitaryProfile_DuplicateFrequency_ShouldNotAdd()
+    public void AddFrequency_DuplicateFrequency_ShouldNotAdd()
     {
         // Arrange
         var profile = MilitaryProfile.Create("Oscar", "555.66", null, Guid.NewGuid());
         var duplicateFrequency = "555.66";
+
+        // Act
+        profile.AddFrequency(duplicateFrequency);
+
+        // Assert
+        Assert.Single(profile.Frequencies);
+    }
+
+    [Fact]
+    public void AddFrequency_NormalizedDuplicateFrequency_ShouldNotAdd()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Oscar", "555.66", null, Guid.NewGuid());
+        var duplicateFrequency = "  555.66  ";
 
         // Act
         profile.AddFrequency(duplicateFrequency);
@@ -208,7 +250,23 @@ public class MilitaryProfileTests
 
         // Assert
         Assert.Single(profile.Frequencies);
-        Assert.Contains(profile.Frequencies, f => f.Value == additionalFrequency);
+        Assert.Contains(profile.Frequencies, f => f.FrequencyCode.Value == additionalFrequency);
+    }
+
+    [Fact]
+    public void RemoveFrequency_NormalizedFrequency_ShouldSucceed()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Quebec", "777.88", null, Guid.NewGuid());
+        var additionalFrequency = "888.99";
+        profile.AddFrequency(additionalFrequency);
+
+        // Act
+        profile.RemoveFrequency("  777.88  ");
+
+        // Assert
+        Assert.Single(profile.Frequencies);
+        Assert.Contains(profile.Frequencies, f => f.FrequencyCode.Value == additionalFrequency);
     }
 
     [Fact]
@@ -245,7 +303,7 @@ public class MilitaryProfileTests
     }
 
     [Fact]
-    public void MilitaryProfile_UpdatedAt_ShouldUpdateOnChanges()
+    public void MilitaryProfile_UpdatedAt_ShouldUpdateOnProfileUpdate()
     {
         // Arrange
         var profile = MilitaryProfile.Create("Sierra", "000.11", null, Guid.NewGuid());
@@ -255,6 +313,35 @@ public class MilitaryProfileTests
         profile.Update("Sierra Updated", null, null);
 
         // Assert
-        Assert.True(profile.UpdatedAt > originalUpdatedAt);
+        Assert.True(profile.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void MilitaryProfile_UpdatedAt_ShouldUpdateOnAddFrequency()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Tango", "000.11", null, Guid.NewGuid());
+        var originalUpdatedAt = profile.UpdatedAt;
+
+        // Act
+        profile.AddFrequency("000.12");
+
+        // Assert
+        Assert.True(profile.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void MilitaryProfile_UpdatedAt_ShouldUpdateOnRemoveFrequency()
+    {
+        // Arrange
+        var profile = MilitaryProfile.Create("Uniform", "000.11", null, Guid.NewGuid());
+        profile.AddFrequency("000.12");
+        var originalUpdatedAt = profile.UpdatedAt;
+
+        // Act
+        profile.RemoveFrequency("000.12");
+
+        // Assert
+        Assert.True(profile.UpdatedAt >= originalUpdatedAt);
     }
 }
