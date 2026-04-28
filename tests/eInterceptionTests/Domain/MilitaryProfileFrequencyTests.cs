@@ -2,7 +2,7 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
-using Domain.Entities;
+using WebUI.Domain.Entities;
 
 namespace eInterceptionTests.Domain;
 

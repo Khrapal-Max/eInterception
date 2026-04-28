@@ -2,9 +2,9 @@
 // All rights by agreement of the developer. Author data on GitHub Khrapal M.G.
 //-----------------------------------------------------------------------------
 
-using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using WebUI.Components;
+using WebUI.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
